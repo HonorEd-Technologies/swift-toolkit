@@ -106,23 +106,22 @@ public class Publication: Loggable {
                 }
             }
         }
-        if cachedHrefToLinks == nil && self != nil {
-            cachedHrefToLinks = [:]
-            collectAllLinks(list: &cachedHrefToLinks!, in: readingOrder, resources, links)
+        if self != nil && self.cachedHrefToLinks == nil {
+            var hrefToLinks: [String: Link] = [:]
+            collectAllLinks(list: &hrefToLinks, in: readingOrder, resources, links)
+            self.cachedHrefToLinks = hrefToLinks
         }
-        var link = cachedHrefToLinks?.first(where: {$0.key == href})?.value
-        if
-            link == nil,
-            let shortHREF = href.components(separatedBy: .init(charactersIn: "#?")).first,
-            shortHREF != href
+        var link = self.cachedHrefToLinks?[href]
+        if link == nil,
+           let shortHREF = href.components(separatedBy: .init(charactersIn: "#?")).first,
+           shortHREF != href
         {
             // Tries again, but without the anchor and query parameters.
-            link = cachedHrefToLinks?.first(where: {$0.key == shortHREF})?.value
+            link = self.cachedHrefToLinks?[shortHREF]
         }
         
         return link
     }
-
     
     /// Finds the first link with the given relation in the publication's links.
     public func link(withRel rel: LinkRelation) -> Link? {
