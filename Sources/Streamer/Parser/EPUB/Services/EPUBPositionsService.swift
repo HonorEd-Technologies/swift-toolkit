@@ -106,6 +106,39 @@ public final class EPUBPositionsService: PositionsService {
         return positions
     }()
     
+    public func trimmedPositions(_ locator: Locator, trimmedToc: [Link]) -> [[Locator]]? {
+        var lastPositionOfPreviousResource = 0
+        var positions = readingOrder.compactMap { link -> [Locator]? in
+            guard trimmedToc.filter({ $0.href.contains(link.href) }).count != 0 else {
+                return nil
+            }
+            let (lastPosition, positions): (Int, [Locator]) = {
+                if presentation.layout(of: link) == .fixed {
+                    return makePositions(ofFixedResource: link, from: lastPositionOfPreviousResource)
+                } else {
+                    return makePositions(ofReflowableResource: link, from: lastPositionOfPreviousResource)
+                }
+            }()
+            lastPositionOfPreviousResource = lastPosition
+            return positions
+        }
+
+        let totalPageCount = positions.map(\.count).reduce(0, +)
+        if totalPageCount > 0 {
+            positions = positions.map { locators in
+                locators.map { locator in
+                    locator.copy(locations: {
+                        if let position = $0.position {
+                            $0.totalProgression = Double(position - 1) / Double(totalPageCount)
+                        }
+                    })
+                }
+            }
+        }
+
+        return positions
+    }
+    
     private func makePositions(ofFixedResource link: Link, from startPosition: Int) -> (Int, [Locator]) {
         let position = startPosition + 1
         let positions = [

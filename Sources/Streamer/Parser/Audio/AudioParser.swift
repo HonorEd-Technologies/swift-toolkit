@@ -1,7 +1,12 @@
 //
+//  AudioParser.swift
+//  r2-streamer-swift
+//
+//  Created by Mickaël Menu on 15/07/2020.
+//
 //  Copyright 2020 Readium Foundation. All rights reserved.
-//  Use of this source code is governed by the BSD-style license
-//  available in the top-level LICENSE file of the project.
+//  Use of this source code is governed by a BSD-style license which is detailed
+//  in the LICENSE file present in the project repository where this source code is maintained.
 //
 
 import Foundation
@@ -33,7 +38,6 @@ public final class AudioParser: PublicationParser {
             format: .cbz,
             manifest: Manifest(
                 metadata: Metadata(
-                    conformsTo: [.audiobook],
                     title: fetcher.guessTitle(ignoring: ignores) ?? asset.name
                 ),
                 readingOrder: readingOrder

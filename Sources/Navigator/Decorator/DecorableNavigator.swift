@@ -30,9 +30,14 @@ public protocol DecorableNavigator {
     ///
     /// - Parameter onActivated: Called when the user activates the decoration, e.g. with a click or tap.
     func observeDecorationInteractions(inGroup group: String, onActivated: OnActivatedCallback?)
+    
+    /// Registers new callbacks for decoration interactions
+    ///
+    /// - Parameter onActivated: Called when the user activates the decoration, e.g. with a click or tap.
+    func observeDecorationFullInteractions(onActivated: OnActivatedCallback?)
 
     /// Called when the user activates a decoration, e.g. with a click or tap.
-    typealias OnActivatedCallback = (_ event: OnDecorationActivatedEvent) -> Void
+    typealias OnActivatedCallback = (_ events: [OnDecorationActivatedEvent]) -> Void
 }
 
 /// Holds the metadata about a decoration activation interaction.
@@ -52,6 +57,10 @@ public struct OnDecorationActivatedEvent {
 public extension DecorableNavigator {
     func observeDecorationInteractions(inGroup group: String, onActivated: OnActivatedCallback? = nil) {
         observeDecorationInteractions(inGroup: group, onActivated: onActivated)
+    }
+    
+    func observeDecorationFullInteractions(onActivated: OnActivatedCallback?) {
+        observeDecorationFullInteractions(onActivated: onActivated)
     }
 }
 

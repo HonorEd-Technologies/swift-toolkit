@@ -1,7 +1,12 @@
 //
+//  CBZNavigatorViewController.swift
+//  r2-navigator-swift
+//
+//  Created by Alexandre Camilleri on 8/24/17.
+//
 //  Copyright 2018 Readium Foundation. All rights reserved.
-//  Use of this source code is governed by the BSD-style license
-//  available in the top-level LICENSE file of the project.
+//  Use of this source code is governed by a BSD-style license which is detailed
+//  in the LICENSE file present in the project repository where this source code is maintained.
 //
 
 import UIKit
@@ -60,7 +65,7 @@ open class CBZNavigatorViewController: UIViewController, VisualNavigator, Loggab
 
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(didTap)))
         
-        goToResourceAtIndex(initialIndex, animated: false, isJump: false)
+        goToResourceAtIndex(initialIndex)
     }
     
     private var currentResourceIndex: Int {
@@ -80,7 +85,7 @@ open class CBZNavigatorViewController: UIViewController, VisualNavigator, Loggab
     }
     
     @discardableResult
-    private func goToResourceAtIndex(_ index: Int, animated: Bool, isJump: Bool, completion: @escaping () -> Void = {}) -> Bool {
+    private func goToResourceAtIndex(_ index: Int, animated: Bool = false, completion: @escaping () -> Void = {}) -> Bool {
         guard let imageViewController = imageViewController(at: index) else {
             return false
         }
@@ -100,9 +105,6 @@ open class CBZNavigatorViewController: UIViewController, VisualNavigator, Loggab
                 return
             }
             self.delegate?.navigator(self, locationDidChange: position)
-            if isJump {
-                self.delegate?.navigator(self, didJumpTo: position)
-            }
             completion()
         }
         return true
@@ -138,22 +140,22 @@ open class CBZNavigatorViewController: UIViewController, VisualNavigator, Loggab
         guard let index = publication.readingOrder.firstIndex(withHREF: locator.href) else {
             return false
         }
-        return goToResourceAtIndex(index, animated: animated, isJump: true, completion: completion)
+        return goToResourceAtIndex(index, animated: animated, completion: completion)
     }
     
     public func go(to link: Link, animated: Bool, completion: @escaping () -> Void) -> Bool {
         guard let index = publication.readingOrder.firstIndex(withHREF: link.href) else {
             return false
         }
-        return goToResourceAtIndex(index, animated: animated, isJump: true, completion: completion)
+        return goToResourceAtIndex(index, animated: animated, completion: completion)
     }
     
     public func goForward(animated: Bool, completion: @escaping () -> Void) -> Bool {
-        return goToResourceAtIndex(currentResourceIndex + 1, animated: animated, isJump: false, completion: completion)
+        return goToResourceAtIndex(currentResourceIndex + 1, animated: animated, completion: completion)
     }
     
     public func goBackward(animated: Bool, completion: @escaping () -> Void) -> Bool {
-        return goToResourceAtIndex(currentResourceIndex - 1, animated: animated, isJump: false, completion: completion)
+        return goToResourceAtIndex(currentResourceIndex - 1, animated: animated, completion: completion)
     }
 
 }
@@ -226,7 +228,9 @@ extension CBZNavigatorViewController {
     }
     
     @available(*, unavailable, message: "Use `go(to:)` using the `readingOrder` instead")
-    public func load(at index: Int) {}
+    public func load(at index: Int) {
+        goToResourceAtIndex(index, animated: true)
+    }
     
     @available(*, unavailable, message: "Use init(publication:initialLocation:) instead")
     public convenience init(for publication: Publication, initialIndex: Int = 0) {

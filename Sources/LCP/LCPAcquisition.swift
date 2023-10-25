@@ -10,7 +10,7 @@ import R2Shared
 /// Represents an on-going LCP acquisition task.
 ///
 /// You can cancel the on-going download with `acquisition.cancel()`.
-public final class LCPAcquisition: Loggable, Cancellable {
+public final class LCPAcquisition: Loggable {
 
     /// Informations about an acquired publication protected with LCP.
     public struct Publication {
@@ -20,6 +20,9 @@ public final class LCPAcquisition: Loggable, Cancellable {
 
         /// Filename that should be used for the publication when importing it in the user library.
         public let suggestedFilename: String
+        
+        /// Download task used to fetch the publication.
+        public let downloadTask: URLSessionDownloadTask?
     }
     
     /// Percent-based progress of the acquisition.
@@ -32,19 +35,25 @@ public final class LCPAcquisition: Loggable, Cancellable {
 
     /// Cancels the acquisition.
     public func cancel() {
-        cancellable.cancel()
+        guard !isCancelled else {
+            return
+        }
+        isCancelled = true
+        downloadTask?.cancel()
         didComplete(with: .cancelled)
     }
     
-    let onProgress: (Progress) -> Void
-    var cancellable = MediatorCancellable()
-    
+    let progress = MutableObservable<Progress>(.indefinite)
+
+    private(set) var isCancelled = false
     private var isCompleted = false
     private let completion: (CancellableResult<Publication, LCPError>) -> Void
     
+    var downloadTask: URLSessionDownloadTask?
+    
     init(onProgress: @escaping (Progress) -> Void, completion: @escaping (CancellableResult<Publication, LCPError>) -> Void) {
-        self.onProgress = onProgress
         self.completion = completion
+        self.progress.observe(onProgress)
     }
     
     func didComplete(with result: CancellableResult<Publication, LCPError>) -> Void {

@@ -60,7 +60,6 @@ public final class PDFParser: PublicationParser, Loggable {
                     identifier: document.identifier,
                     title: document.title ?? asset.name,
                     authors: authors,
-                    readingProgression: document.readingProgression ?? .auto,
                     numberOfPages: document.pageCount
                 ),
                 readingOrder: readingOrder,

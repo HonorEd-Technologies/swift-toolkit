@@ -150,6 +150,10 @@ public final class Streamer: Loggable {
             }
     }
     
+    public func setTrimPublication(trimmedToc: [Link]?) {
+        parsers.compactMap({ $0 as? EPUBParser }).forEach({ $0.trimmedToc = trimmedToc })
+    }
+    
     /// Parses the `Publication` from the provided asset and the `parsers`.
     private func parsePublication(from openedAsset: OpenedAsset, warnings: WarningLogger?, onCreatePublication: Publication.Builder.Transform?) -> Deferred<Publication, Publication.OpeningError> {
         return deferred(on: .global(qos: .userInitiated)) {

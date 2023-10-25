@@ -114,6 +114,28 @@ final class EPUBFixedSpreadView: EPUBSpreadView {
         return rect
     }
 
+    override func convertPointFromNavigatorSpace(_ point: CGPoint) -> CGPoint {
+        if scrollView.zoomScale > 0 {
+            return CGPoint(
+                x: point.x / scrollView.zoomScale + scrollView.contentOffset.x - webView.frame.minX,
+                y: point.y / scrollView.zoomScale + scrollView.contentOffset.y - webView.frame.minY
+            )
+        }
+        return point
+    }
+
+    override func convertRectFromNavigatorSpace(_ rect: CGRect) -> CGRect {
+        var rect = rect
+        rect.origin = convertPointFromNavigatorSpace(rect.origin)
+        if scrollView.zoomScale > 0 {
+            rect.size = CGSize(
+                width: rect.width / scrollView.zoomScale,
+                height: rect.height / scrollView.zoomScale
+            )
+        }
+        return rect
+    }
+
     override func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         super.webView(webView, didFinish: navigation)
         
