@@ -16,11 +16,11 @@ import R2Shared
 final class DeviceService {
     
     private let repository: DeviceRepository
-    private let httpClient: HTTPClient
+    private let network: NetworkService
     
-    init(repository: DeviceRepository, httpClient: HTTPClient) {
+    init(repository: DeviceRepository, network: NetworkService) {
         self.repository = repository
-        self.httpClient = httpClient
+        self.network = network
     }
     
     /// Returns the device ID, creates it if needed.
@@ -60,14 +60,14 @@ final class DeviceService {
                 throw LCPError.licenseInteractionNotAvailable
             }
             
-            return self.httpClient.fetch(HTTPRequest(url: url, method: .post))
-                .tryMap { response in
-                    guard 100..<400 ~= response.statusCode else {
+            return self.network.fetch(url, method: .post)
+                .tryMap { status, data in
+                    guard 100..<400 ~= status else {
                         return nil
                     }
                     
                     try self.repository.registerDevice(for: license)
-                    return response.body
+                    return data
                 }
         }
     }

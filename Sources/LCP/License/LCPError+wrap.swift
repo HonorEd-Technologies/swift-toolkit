@@ -10,7 +10,6 @@
 //
 
 import Foundation
-import R2Shared
 
 extension LCPError {
     
@@ -29,10 +28,6 @@ extension LCPError {
             return .licenseReturn(error)
         } else if let error = error as? ParsingError {
             return .parsing(error)
-        }
-        
-        if let error = error as? HTTPError {
-            return .network(error)
         }
         
         let nsError = error as NSError
