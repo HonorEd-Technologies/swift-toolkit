@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
   s.resources     = ['Sources/Navigator/Resources/**', 'Sources/Navigator/EPUB/Assets']
   s.source_files  = "Sources/Navigator/**/*.{m,h,swift}"
   s.platform      = :ios
-  s.ios.deployment_target = "10.0"
+  s.ios.deployment_target = "15.0"
   s.dependency 'R2Shared'
   s.dependency 'DifferenceKit'
   s.dependency 'SwiftSoup', '~> 2.3'
