@@ -678,10 +678,12 @@ open class EPUBNavigatorViewController: UIViewController, VisualNavigator, Selec
     private var isTextSelectionEnabled = true
     // set the  property `isTextSelectionEnabled`
     public func setTextSelection(allow: Bool = true) {
-        for (_, pageView) in paginationView.loadedViews {
-            (pageView as? EPUBSpreadView)?.webView.configuration.preferences.isTextInteractionEnabled = allow
+        if #available(iOS 15.0, *) {
+            for (_, pageView) in paginationView.loadedViews {
+                (pageView as? EPUBSpreadView)?.webView.configuration.preferences.isTextInteractionEnabled = allow
+            }
+            isTextSelectionEnabled = allow
         }
-        isTextSelectionEnabled = allow
     }
 
     // MARK: – DecorableNavigator
