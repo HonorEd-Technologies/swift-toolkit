@@ -225,8 +225,17 @@ public class PublicationServer: ResourcesServer {
                 href = href.removingPercentEncoding ?? href
             }
 
-            let resource = publication.get(href.removingPercentEncoding ?? href)
+            var resource = publication.get(href.removingPercentEncoding ?? href)
             let range = request.hasByteRange() ? request.byteRange : nil
+            
+            switch resource.length {
+            case .failure(_):
+                if let count = request.url.query?.count, count > 0, let link = publication.link(withHREF: href) {
+                    resource = publication.get(link)
+                }
+            default:
+                break
+            }
             return WebServerResourceResponse(
                 resource: resource,
                 range: range,
@@ -361,10 +370,5 @@ public class PublicationServer: ResourcesServer {
     public func add(_ publication: Publication, with container: Container, at endpoint: String = UUID().uuidString) throws {
         try add(publication, at: endpoint)
     }
-    
-    // Mapping between endpoint and the matching container.
-    @available(*, unavailable, message: "`Container` is not used anymore in the `PublicationServer")
-    public private(set) var containers: [String: Container] = [:]
-    
 }
 

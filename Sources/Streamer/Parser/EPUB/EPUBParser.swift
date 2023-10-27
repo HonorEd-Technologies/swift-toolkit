@@ -48,6 +48,7 @@ extension EPUBParser: Loggable {}
 final public class EPUBParser: PublicationParser {
 
     private let reflowablePositionsStrategy: EPUBPositionsService.ReflowableStrategy
+    public var trimmedToc: [Link]?
 
     /// - Parameter reflowablePositionsStrategy: Strategy used to calculate the number of positions in a reflowable resource.
     public init(reflowablePositionsStrategy: EPUBPositionsService.ReflowableStrategy = .recommended) {
@@ -68,8 +69,16 @@ final public class EPUBParser: PublicationParser {
         let components = try OPFParser(fetcher: fetcher, opfHREF: opfHREF, fallbackTitle: asset.name, encryptions: encryptions).parsePublication()
         let metadata = components.metadata
         let links = components.readingOrder + components.resources
-        
         let userProperties = UserProperties()
+        
+        var transformers: [ResourceTransformer] = [EPUBDeobfuscator(publicationId: metadata.identifier ?? "").deobfuscate(resource:),
+            EPUBHTMLInjector(metadata: components.metadata, userProperties: userProperties).inject]
+        
+        if let tocLinks = navigationDocument(in: fetcher, links: links)?.links(for: .tableOfContents), let trimmedToc = trimmedToc {
+            transformers.append(EPUBTrimmer(trimmedToc: trimmedToc, toc: tocLinks.flatMap(\.children).flatMap({ [$0] + $0.children })).trim)
+        } else if let tocLinks = ncxDocumentToC(in: fetcher, links: links), let trimmedToc = trimmedToc {
+            transformers.append(EPUBTrimmer(trimmedToc: trimmedToc, toc: tocLinks.flatMap(\.children).flatMap({ [$0] + $0.children })).trim)
+        }
 
         return Publication.Builder(
             mediaType: .epub,
@@ -80,10 +89,9 @@ final public class EPUBParser: PublicationParser {
                 resources: components.resources,
                 subcollections: parseCollections(in: fetcher, links: links)
             ),
-            fetcher: TransformingFetcher(fetcher: fetcher, transformers: [
-                EPUBDeobfuscator(publicationId: metadata.identifier ?? "").deobfuscate(resource:),
-                EPUBHTMLInjector(metadata: components.metadata, userProperties: userProperties).inject(resource:)
-            ]),
+            fetcher: TransformingFetcher(fetcher: fetcher, transformers:
+                transformers
+            ),
             servicesBuilder: .init(
                 positions: EPUBPositionsService.makeFactory(reflowableStrategy: reflowablePositionsStrategy),
                 search: _StringSearchService.makeFactory()
@@ -110,18 +118,20 @@ final public class EPUBParser: PublicationParser {
     }
 
     // MARK: - Internal Methods.
+    
+    private func navigationDocument(in fetcher: Fetcher, links: [Link]) -> NavigationDocumentParser? {
+        guard let navLink = links.first(withRel: .contents),
+            let navDocumentData = try? fetcher.readData(at: navLink.href) else
+        {
+            return nil
+        }
+        return NavigationDocumentParser(data: navDocumentData, at: navLink.href)
+    }
 
     /// Attempt to fill the `Publication`'s `tableOfContent`, `landmarks`, `pageList` and `listOfX` links collections using the navigation document.
     private func parseNavigationDocument(in fetcher: Fetcher, links: [Link]) -> [String: [PublicationCollection]] {
         // Get the link in the readingOrder pointing to the Navigation Document.
-        guard let navLink = links.first(withRel: .contents),
-            let navDocumentData = try? fetcher.readData(at: navLink.href) else
-        {
-            return [:]
-        }
-        
-        // Get the location of the navigation document in order to normalize href paths.
-        let navigationDocument = NavigationDocumentParser(data: navDocumentData, at: navLink.href)
+        guard let navigationDocument = navigationDocument(in: fetcher, links: links) else { return [:] }
         
         var collections: [String: [PublicationCollection]] = [:]
         func addCollection(_ type: NavigationDocumentParser.NavType, role: String) {
@@ -140,6 +150,12 @@ final public class EPUBParser: PublicationParser {
         addCollection(.listOfVideos, role: "lov")
         
         return collections
+    }
+    
+    private func ncxDocumentToC(in fetcher: Fetcher, links: [Link]) -> [Link]? {
+        guard let ncxLink = links.first(withMediaType: .ncx), let ncxDocumentData = try? fetcher.readData(at: ncxLink.href) else { return nil }
+        
+        return NCXParser(data: ncxDocumentData, at: ncxLink.href).links(for: .tableOfContents)
     }
 
     /// Attempt to fill `Publication.tableOfContent`/`.pageList` using the NCX

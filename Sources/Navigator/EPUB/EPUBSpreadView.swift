@@ -8,6 +8,14 @@ import WebKit
 import R2Shared
 import SwiftSoup
 
+struct ActivatedDecorationEvent {
+    let id: Decoration.Id
+    let group: String
+    let frame: CGRect?
+    let point: CGPoint?
+    var decoration: Decoration?
+}
+
 protocol EPUBSpreadViewDelegate: AnyObject {
     /// Called when the spread view finished loading.
     func spreadViewDidLoad(_ spreadView: EPUBSpreadView)
@@ -21,8 +29,8 @@ protocol EPUBSpreadViewDelegate: AnyObject {
     /// Called when the user tapped on an internal link.
     func spreadView(_ spreadView: EPUBSpreadView, didTapOnInternalLink href: String, clickEvent: ClickEvent?)
 
-    /// Called when the user tapped on a decoration.
-    func spreadView(_ spreadView: EPUBSpreadView, didActivateDecoration id: Decoration.Id, inGroup group: String, frame: CGRect?, point: CGPoint?)
+    /// Called when the user tapped on a location that can have multiple decorations.
+    func spreadView(_ spreadView: EPUBSpreadView, activatedDecorations: [ActivatedDecorationEvent])
 
     /// Called when the text selection changes.
     func spreadView(_ spreadView: EPUBSpreadView, selectionDidChange text: Locator.Text?, frame: CGRect)
@@ -32,6 +40,8 @@ protocol EPUBSpreadViewDelegate: AnyObject {
     
     /// Called when the spread view needs to present a view controller.
     func spreadView(_ spreadView: EPUBSpreadView, present viewController: UIViewController)
+    
+    func shouldSpreadViewDefaultToExternalWebView() -> Bool
 }
 
 class EPUBSpreadView: UIView, Loggable, PageView {
@@ -47,6 +57,8 @@ class EPUBSpreadView: UIView, Loggable, PageView {
     let readingProgression: ReadingProgression
     let userSettings: UserSettings
     let editingActions: EditingActionsController
+    
+    var onOpenExternalLinkByDefault: (URL) -> Void = { _ in }
 
     private var lastClick: ClickEvent? = nil
 
@@ -93,15 +105,14 @@ class EPUBSpreadView: UIView, Loggable, PageView {
             webView.configuration.userContentController.addUserScript(script)
         }
         registerJSMessages()
-
-        NotificationCenter.default.addObserver(self, selector: #selector(voiceOverStatusDidChange), name: Notification.Name(UIAccessibilityVoiceOverStatusChanged), object: nil)
+        registerNotifications()
 
         updateActivityIndicator()
         loadSpread()
     }
 
     deinit {
-        NotificationCenter.default.removeObserver(self)
+        unregisterNotifications()
         disableJSMessages()
     }
 
@@ -124,6 +135,9 @@ class EPUBSpreadView: UIView, Loggable, PageView {
         webView.navigationDelegate = self
         webView.uiDelegate = self
         scrollView.delegate = self
+        if webView.responds(to: Selector(("setInspectable:"))) {
+            webView.perform(Selector(("setInspectable:")), with: true)
+        }
     }
 
     @available(*, unavailable)
@@ -219,6 +233,18 @@ class EPUBSpreadView: UIView, Loggable, PageView {
         return rect
     }
 
+    /// Converts to JavaScript point from a point in the webview's coordinate space.
+    func convertPointFromNavigatorSpace(_ point: CGPoint) -> CGPoint {
+        // To override in subclasses.
+        return point
+    }
+
+    /// Converts to JavaScript rect from a rect in the webview's coordinate space.
+    func convertRectFromNavigatorSpace(_ rect: CGRect) -> CGRect {
+        // To override in subclasses.
+        return rect
+    }
+
     /// Called by the UITapGestureRecognizer as a fallback tap when tapping around the webview.
     @objc private func didTapBackground(_ gesture: UITapGestureRecognizer) {
         let point = gesture.location(in: self)
@@ -267,7 +293,6 @@ class EPUBSpreadView: UIView, Loggable, PageView {
         }
 
         focusedResource = spread.links.first(withHREF: href)
-        frame.origin = convertPointToNavigatorSpace(frame.origin)
         delegate?.spreadView(self, selectionDidChange: text, frame: frame)
     }
     
@@ -345,7 +370,7 @@ class EPUBSpreadView: UIView, Loggable, PageView {
     }
     
     /// Add the message handlers for incoming javascript events.
-    private func enableJSMessages() {
+    func enableJSMessages() {
         guard !JSMessagesEnabled else {
             return
         }
@@ -356,7 +381,7 @@ class EPUBSpreadView: UIView, Loggable, PageView {
     }
     
     // Removes message handlers (preventing strong reference cycle).
-    private func disableJSMessages() {
+    func disableJSMessages() {
         guard JSMessagesEnabled else {
             return
         }
@@ -365,26 +390,50 @@ class EPUBSpreadView: UIView, Loggable, PageView {
             webView.configuration.userContentController.removeScriptMessageHandler(forName: name)
         }
     }
+    private var voiceOverStatusChangeObserver: NSObjectProtocol?
 
-
+    func registerNotifications() {
+        if voiceOverStatusChangeObserver == nil {
+            voiceOverStatusChangeObserver = NotificationCenter.default.addObserver(forName: Notification.Name(UIAccessibilityVoiceOverStatusChanged),
+                        object: nil, queue: nil) { [weak self] notification in
+                self?.voiceOverStatusDidChange()
+            }
+        }
+    }
+    func unregisterNotifications() {
+        NotificationCenter.default.removeObserver(voiceOverStatusChangeObserver)
+        voiceOverStatusChangeObserver = nil
+    }
     // MARK: – Decorator
 
     /// Called by the JavaScript layer when the user activates a decoration.
     private func decorationDidActivate(_ body: Any) {
-        guard
-            let decoration = body as? [String: Any],
-            let decorationId = decoration["id"] as? Decoration.Id,
-            let groupName = decoration["group"] as? String,
-            var frame = CGRect(json: decoration["rect"])
-        else {
-            log(.warning, "Invalid body for decorationDidActivate: \(body)")
+        guard let decorations = body as? [Any] else {
             return
         }
-
-        frame = convertRectToNavigatorSpace(frame)
-        let point = ClickEvent(json: decoration["click"])
-            .map { convertPointToNavigatorSpace($0.point) }
-        delegate?.spreadView(self, didActivateDecoration: decorationId, inGroup: groupName, frame: frame, point: point)
+        
+        var activatedDecorations: [ActivatedDecorationEvent] = []
+        
+        for decorationBody in decorations {
+            guard
+                let decoration = decorationBody as? [String: Any],
+                let decorationId = decoration["id"] as? Decoration.Id,
+                let groupName = decoration["group"] as? String,
+                var frame = CGRect(json: decoration["rect"])
+            else {
+                continue
+            }
+            
+            let point = ClickEvent(json: decoration["click"])
+                .map { convertPointToNavigatorSpace($0.point) }
+            let activatedDecoration = ActivatedDecorationEvent(id: decorationId,
+                                                               group: groupName,
+                                                               frame: frame,
+                                                               point: point)
+            activatedDecorations.append(activatedDecoration)
+        }
+        
+        delegate?.spreadView(self, activatedDecorations: activatedDecorations)
     }
 
     
@@ -436,9 +485,11 @@ extension EPUBSpreadView: WKNavigationDelegate {
         if navigationAction.navigationType == .linkActivated {
             if let url = navigationAction.request.url {
                 // Check if url is internal or external
-                if let baseURL = publication.baseURL, url.host == baseURL.host {
+                if let baseURL = publication.baseURL, url.host == baseURL.host, delegate?.shouldSpreadViewDefaultToExternalWebView() == false {
                     let href = url.absoluteString.replacingOccurrences(of: baseURL.absoluteString, with: "/")
                     delegate?.spreadView(self, didTapOnInternalLink: href, clickEvent: self.lastClick)
+                } else if let baseURL = publication.baseURL, delegate?.shouldSpreadViewDefaultToExternalWebView() == true && url.host == baseURL.host {
+                    onOpenExternalLinkByDefault(url)
                 } else {
                     delegate?.spreadView(self, didTapOnExternalURL: url)
                 }

@@ -1,7 +1,12 @@
 //
+//  PDFNavigatorViewController.swift
+//  r2-navigator-swift
+//
+//  Created by Mickaël Menu on 05.03.19.
+//
 //  Copyright 2019 Readium Foundation. All rights reserved.
-//  Use of this source code is governed by the BSD-style license
-//  available in the top-level LICENSE file of the project.
+//  Use of this source code is governed by a BSD-style license which is detailed
+//  in the LICENSE file present in the project repository where this source code is maintained.
 //
 
 import Foundation
@@ -10,12 +15,12 @@ import UIKit
 import R2Shared
 
 
-public protocol PDFNavigatorDelegate: VisualNavigatorDelegate, SelectableNavigatorDelegate { }
+public protocol PDFNavigatorDelegate: VisualNavigatorDelegate { }
 
 
 /// A view controller used to render a PDF `Publication`.
 @available(iOS 11.0, *)
-open class PDFNavigatorViewController: UIViewController, VisualNavigator, SelectableNavigator, Loggable {
+open class PDFNavigatorViewController: UIViewController, VisualNavigator, Loggable {
     
     enum Error: Swift.Error {
         case openPDFFailed
@@ -88,9 +93,9 @@ open class PDFNavigatorViewController: UIViewController, VisualNavigator, Select
         editingActions.updateSharedMenuController()
 
         if let locator = initialLocation {
-            go(to: locator, isJump: false)
+            go(to: locator)
         } else if let link = publication.readingOrder.first {
-            go(to: link, pageNumber: 0, isJump: false)
+            go(to: link)
         } else {
             log(.error, "No initial location and empty reading order")
         }
@@ -141,22 +146,7 @@ open class PDFNavigatorViewController: UIViewController, VisualNavigator, Select
         delegate?.navigator(self, locationDidChange: locator)
     }
 
-    @discardableResult
-    private func go(to locator: Locator, isJump: Bool, completion: @escaping () -> Void = {}) -> Bool {
-        guard let index = publication.readingOrder.firstIndex(withHREF: locator.href) else {
-            return false
-        }
-
-        return go(
-            to: publication.readingOrder[index],
-            pageNumber: pageNumber(for: locator),
-            isJump: isJump,
-            completion: completion
-        )
-    }
-
-    @discardableResult
-    private func go(to link: Link, pageNumber: Int?, isJump: Bool, completion: @escaping () -> Void = {}) -> Bool {
+    private func go(to link: Link, pageNumber: Int? = nil, completion: @escaping () -> Void) -> Bool {
         guard let index = publication.readingOrder.firstIndex(of: link) else {
             return false
         }
@@ -185,10 +175,6 @@ open class PDFNavigatorViewController: UIViewController, VisualNavigator, Select
             }
             pdfView.go(to: page)
         }
-        if isJump, let delegate = delegate, let location = currentPosition {
-            delegate.navigator(self, didJumpTo: location)
-        }
-
         DispatchQueue.main.async(execute: completion)
         return true
     }
@@ -244,15 +230,7 @@ open class PDFNavigatorViewController: UIViewController, VisualNavigator, Select
         return positions[pageNumber - 1]
     }
     
-    // MARK: – SelectableNavigator
-
-    public var currentSelection: Selection? { editingActions.selection }
-
-    public func clearSelection() {
-        pdfView.clearSelection()
-    }
-
-
+    
     // MARK: - User Selection
 
     @objc func selectionDidChange(_ note: Notification) {
@@ -298,11 +276,19 @@ open class PDFNavigatorViewController: UIViewController, VisualNavigator, Select
     }
 
     public func go(to locator: Locator, animated: Bool, completion: @escaping () -> Void) -> Bool {
-        return go(to: locator, isJump: true, completion: completion)
+        guard let index = publication.readingOrder.firstIndex(withHREF: locator.href) else {
+            return false
+        }
+
+        return go(
+            to: publication.readingOrder[index],
+            pageNumber: pageNumber(for: locator),
+            completion: completion
+        )
     }
     
     public func go(to link: Link, animated: Bool, completion: @escaping () -> Void) -> Bool {
-        return go(to: link, pageNumber: nil, isJump: true, completion: completion)
+        return go(to: Locator(link: link), animated: animated, completion: completion)
     }
     
     public func goForward(animated: Bool, completion: @escaping () -> Void) -> Bool {
@@ -362,11 +348,11 @@ extension PDFNavigatorViewController: EditingActionsControllerDelegate {
     }
 
     func editingActions(_ editingActions: EditingActionsController, shouldShowMenuForSelection selection: Selection) -> Bool {
-        return delegate?.navigator(self, shouldShowMenuForSelection: selection) ?? true
+        true
     }
 
     func editingActions(_ editingActions: EditingActionsController, canPerformAction action: EditingAction, for selection: Selection) -> Bool {
-        return delegate?.navigator(self, canPerformAction: action, for: selection) ?? true
+        true
     }
 }
 

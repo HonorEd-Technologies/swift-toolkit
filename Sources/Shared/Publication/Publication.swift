@@ -38,7 +38,8 @@ public class Publication: Loggable {
     public var subcollections: [String: [PublicationCollection]] { manifest.subcollections }
 
     public var userProperties = UserProperties()
-    
+    private var cachedHrefToLinks: [String:Link]?
+
     // The status of User Settings properties (enabled or disabled).
     public var userSettingsUIPreset: [ReadiumCSSName: Bool]? {
         didSet { userSettingsUIPresetUpdated?(userSettingsUIPreset) }
@@ -97,28 +98,26 @@ public class Publication: Loggable {
     
     /// Finds the first Link having the given `href` in the publication's links.
     public func link(withHREF href: String) -> Link? {
-        func deepFind(in linkLists: [Link]...) -> Link? {
+        func collectAllLinks(list: inout [String: Link], in linkLists: [Link]...) {
             for links in linkLists {
                 for link in links {
-                    if link.href == href {
-                        return link
-                    } else if let child = deepFind(in: link.alternates, link.children) {
-                        return child
-                    }
+                    list.updateValue(link, forKey: link.href)
+                    collectAllLinks(list: &list, in: link.alternates, link.children)
                 }
             }
-            
-            return nil
         }
-        
-        var link = deepFind(in: readingOrder, resources, links)
-        if
-            link == nil,
-            let shortHREF = href.components(separatedBy: .init(charactersIn: "#?")).first,
-            shortHREF != href
+        if self != nil && self.cachedHrefToLinks == nil {
+            var hrefToLinks: [String: Link] = [:]
+            collectAllLinks(list: &hrefToLinks, in: readingOrder, resources, links)
+            self.cachedHrefToLinks = hrefToLinks
+        }
+        var link = self.cachedHrefToLinks?[href]
+        if link == nil,
+           let shortHREF = href.components(separatedBy: .init(charactersIn: "#?")).first,
+           shortHREF != href
         {
             // Tries again, but without the anchor and query parameters.
-            link = self.link(withHREF: shortHREF)
+            link = self.cachedHrefToLinks?[shortHREF]
         }
         
         return link

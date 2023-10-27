@@ -127,17 +127,11 @@ final class EPUBReflowableSpreadView: EPUBSpreadView {
     override func convertPointToNavigatorSpace(_ point: CGPoint) -> CGPoint {
         var point = point
         if isScrollEnabled {
-            // Starting from iOS 12, the contentInset are not taken into account in the JS touch event.
-            if #available(iOS 12.0, *) {
-                if scrollView.contentOffset.x < 0 {
-                    point.x += abs(scrollView.contentOffset.x)
-                }
-                if scrollView.contentOffset.y < 0 {
-                    point.y += abs(scrollView.contentOffset.y)
-                }
-            } else {
-                point.x += scrollView.contentInset.left
-                point.y += scrollView.contentInset.top
+            if scrollView.contentOffset.x < 0 {
+                point.x += abs(scrollView.contentOffset.x)
+            }
+            if scrollView.contentOffset.y < 0 {
+                point.y += abs(scrollView.contentOffset.y)
             }
         }
         point.x += webView.frame.minX
@@ -148,6 +142,27 @@ final class EPUBReflowableSpreadView: EPUBSpreadView {
     override func convertRectToNavigatorSpace(_ rect: CGRect) -> CGRect {
         var rect = rect
         rect.origin = convertPointToNavigatorSpace(rect.origin)
+        return rect
+    }
+
+    override func convertPointFromNavigatorSpace(_ point: CGPoint) -> CGPoint {
+        var point = point
+        if isScrollEnabled {
+            if scrollView.contentOffset.x < 0 {
+                point.x -= abs(scrollView.contentOffset.x)
+            }
+            if scrollView.contentOffset.y < 0 {
+                point.y -= abs(scrollView.contentOffset.y)
+            }
+        }
+        point.x -= webView.frame.minX
+        point.y -= webView.frame.minY
+        return point
+    }
+
+    override func convertRectFromNavigatorSpace(_ rect: CGRect) -> CGRect {
+        var rect = rect
+        rect.origin = convertPointFromNavigatorSpace(rect.origin)
         return rect
     }
 
@@ -169,7 +184,7 @@ final class EPUBReflowableSpreadView: EPUBSpreadView {
         // This delay is used to wait for the web view pagination to settle and give the CSS and webview time to layout
         // correctly before attempting to scroll to the target progression, otherwise we might end up at the wrong spot.
         // 0.2 seconds seems like a good value for it to work on an iPhone 5s.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             let location = self.pendingLocation
             self.go(to: location) {
                 // The rendering is sometimes very slow. So in case we don't show the first page of the resource, we add
@@ -321,9 +336,10 @@ final class EPUBReflowableSpreadView: EPUBSpreadView {
     
     // Called by the javascript code to notify that scrolling ended.
     private func progressionDidChange(_ body: Any) {
-        guard spreadLoaded, let bodyString = body as? String, let newProgression = Double(bodyString) else {
+        guard spreadLoaded, let bodyString = body as? String, var newProgression = Double(bodyString) else {
             return
         }
+        newProgression = min(max(newProgression, 0.0), 1.0)
         if previousProgression == nil {
             previousProgression = progression
         }
@@ -367,8 +383,7 @@ final class EPUBReflowableSpreadView: EPUBSpreadView {
 
         // Makes sure we always receive the "ending scroll" event.
         // ie. https://stackoverflow.com/a/1857162/1474476
-        NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(notifyPagesDidChange), object: nil)
-        perform(#selector(notifyPagesDidChange), with: nil, afterDelay: 0.3)
+        notifyPagesDidChange()
     }
 
 }

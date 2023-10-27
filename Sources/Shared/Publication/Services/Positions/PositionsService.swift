@@ -22,12 +22,18 @@ public protocol PositionsService: PublicationService {
     /// List of all the positions in the publication.
     var positions: [Locator] { get }
     
+    func trimmedPositions(_ locator: Locator, trimmedToc: [Link]) -> [[Locator]]?
+}
+
+extension PositionsService {
+    public func trimmedPositions(_ locator: Locator, trimmedToc: [Link]) -> [[Locator]]? {
+        return nil
+    }
 }
 
 public extension PositionsService {
 
     var positions: [Locator] { positionsByReadingOrder.flatMap { $0 } }
-    
 }
 
 
@@ -102,7 +108,13 @@ public extension Publication {
             .getOrNil()
             ?? []
     }
-
+    
+    func trimmedPositions(_ locator: Locator, trimmedToc: [Link]) -> [[Locator]]? {
+        if let positionsService = findService(PositionsService.self) {
+            return positionsService.trimmedPositions(locator, trimmedToc: trimmedToc)
+        }
+        return nil
+    }
 }
 
 
