@@ -178,6 +178,16 @@ class EPUBSpreadView: UIView, Loggable, PageView {
             }
         }
     }
+    
+    func evaluateScript(_ script: String, inHREF href: String? = nil) async -> Result<Any, Error> {
+        log(.debug, "Evaluate script: \(script)")
+        do {
+            let val = try await webView.evaluateJavaScript(script)
+            return .success(val)
+        } catch let error {
+            return .failure(error)
+        }
+    }
 
     /// Called from the JS code when logging a message.
     private func didLog(_ body: Any) {
