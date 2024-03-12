@@ -772,6 +772,14 @@ open class EPUBNavigatorViewController: UIViewController, VisualNavigator, Selec
         spreadView.evaluateScript(script, completion: completion)
     }
     
+    public func evaluateJavaScript(_ script: String) async -> Result<Any, Error>? {
+        guard let spreadView = paginationView.currentView as? EPUBSpreadView else {
+            return .failure(EPUBError.spreadNotLoaded)
+        }
+        
+        return await spreadView.evaluateScript(script)
+    }
+    
     /// This adds or updates a script as part of the scripts that will be executed on the ePub document
     /// Usually this scripts are being used to handle accessibility support for the ePub
     /// - Parameter script: The script what will be added / updated
