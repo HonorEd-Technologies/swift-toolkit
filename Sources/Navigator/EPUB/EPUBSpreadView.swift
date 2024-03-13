@@ -179,6 +179,7 @@ class EPUBSpreadView: UIView, Loggable, PageView {
         }
     }
     
+    @available(iOS 13, *)
     func evaluateScript(_ script: String, inHREF href: String? = nil) async -> Result<Any, Error> {
         log(.debug, "Evaluate script: \(script)")
         do {
