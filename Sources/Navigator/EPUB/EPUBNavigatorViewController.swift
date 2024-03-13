@@ -772,6 +772,7 @@ open class EPUBNavigatorViewController: UIViewController, VisualNavigator, Selec
         spreadView.evaluateScript(script, completion: completion)
     }
     
+    @available(iOS 13, *)
     public func evaluateJavaScript(_ script: String) async -> Result<Any, Error>? {
         guard let spreadView = paginationView.currentView as? EPUBSpreadView else {
             return .failure(EPUBError.spreadNotLoaded)
