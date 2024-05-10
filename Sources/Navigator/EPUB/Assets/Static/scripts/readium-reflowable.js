@@ -4440,6 +4440,23 @@ function adjustPointToViewport(point) {
     y: point.y + frameRect.y + topScrollingElement.scrollTop,
   };
 }
+    
+/**
+ * Adds padding to webview
+ */
+    
+function insetBottom(height) {
+    const id = "webviewBottomSpacer"
+    let element = document.getElementById(id)
+    if (element) {
+        element.style.height = `${height}px`
+        return
+    }
+    let element = document.createElement("div")
+    element.id = "webviewBottomSpacer"
+    element.style.height = `${height}px`
+    document.appendChild(element)
+}
 
 function rectsFromTexts(texts) {
     return texts.map((text) => {
@@ -4882,6 +4899,7 @@ setAccessibility: setAccessibility,
   rectFromLocatorText: rectFromLocatorText,
   rectsFromLocatorText: rectsFromLocatorText,
   updateEndOfSpread: updateEndOfSpread,
+  insetBottom: insetBottom,
   locatorFromRect: locatorFromRect,
   addAccessibilityEnergyBar: addAccessibilityEnergyBar,
   addAccessibilityUserAnnotation: addAccessibilityUserAnnotation,
