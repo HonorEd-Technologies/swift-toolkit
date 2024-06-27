@@ -4151,6 +4151,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _decorator__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./decorator */ "./src/decorator.js");
 /* harmony import */ var _vendor_hypothesis_anchoring_text_range__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./vendor/hypothesis/anchoring/text-range */ "./src/vendor/hypothesis/anchoring/text-range.js");
 /* harmony import */ var _vendor_hypothesis_anchoring_types__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./vendor/hypothesis/anchoring/types */ "./src/vendor/hypothesis/anchoring/types.js");
+/* harmony import */ var _vendor_hypothesis_xpath__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./xpath */ "./src/vendor/hypothesis/anchoring/xpath.js")
 //
 //  Copyright 2021 Readium Foundation. All rights reserved.
 //  Use of this source code is governed by the BSD-style license
@@ -4588,6 +4589,52 @@ function rectFromPoint(point) {
     }
 }
     
+function hrefsToProgression(hrefs) {
+    var progressions = []
+    const contentHeight = document.scrollingElement.scrollHeight
+    for (var i = 0; i < hrefs.length; i++) {
+        let href = hrefs[i]
+        let components = href.split('/')
+        var selector = ""
+        for (var j = 0; j < components.length; j++) {
+            var component = components[j]
+            if (!component.trim()) {
+                continue
+            }
+            var childNum = undefined
+            if (component.includes("[") && component.includes("]")) {
+                let indexOpen = component.indexOf("[")
+                let indexClose = component.indexOf("]")
+                childNum = parseInt(component.substring(indexOpen + 1, indexClose))
+                console.log(childNum)
+                component = component.substring(0, indexOpen)
+            }
+            selector += component
+            if (childNum !== undefined) {
+                selector += `:nth-of-type(${childNum})`
+            }
+            if (j != components.length - 1) {
+                selector += " > "
+            }
+        }
+        console.log(selector)
+        let node = document.querySelector(selector)
+        if (!node) {
+            continue
+        }
+        let rect = node.getBoundingClientRect()
+        if (rect.bottom < 0 || rect.height === 0) {
+            continue
+        }
+        progressions.push({
+            href: hrefs[i],
+            progression: rect.bottom / contentHeight
+        })
+    }
+    
+    return progressions
+}
+    
 function textFromRect(rect) {
     let textElements = Array.from(document.querySelectorAll(textElementTags)).filter((el) => el.innerText && el.innerText.trim() != "")
     const containsRect = (superRect, el) => {
@@ -4973,6 +5020,7 @@ setAccessibility: setAccessibility,
   textFromRect: textFromRect,
   rectFromPoint: rectFromPoint,
   selectionText: selectionText,
+  hrefsToProgression: hrefsToProgression,
   rectFromLocatorText: rectFromLocatorText,
   rectsFromLocatorText: rectsFromLocatorText,
   animateDecorationsFromLocator: animateDecorationsFromLocator,
