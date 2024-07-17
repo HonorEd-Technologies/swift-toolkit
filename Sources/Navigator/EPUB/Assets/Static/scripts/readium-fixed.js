@@ -4222,7 +4222,7 @@ function initializeAccessibility(doubleTapLabel, energyBarLabel) {
         let annotationsElements = getAnnotationsItemsForLocator(locator)
         let elements = sharedAnnotationsElements.concat(annotationsElements)
         elements.forEach(element => {
-            animate(element, 0, true);
+            animate(element, 0, true)
         });
     }
 
@@ -4237,7 +4237,9 @@ function initializeAccessibility(doubleTapLabel, energyBarLabel) {
         const itemCount = foundGroupSharedAnnotation.items.length
         for (var i = 0; i < itemCount; i++) {
             const item = foundGroupSharedAnnotation.items[i]
-            if (locator.text.highlight === item.decoration.locator.text.highlight) {
+            if (locator.text.highlight === item.decoration.locator.text.highlight
+                && locator.text.before === item.decoration.locator.text.before
+                && locator.text.after === item.decoration.locator.text.after) {
                 elements.push(item.container.firstChild)
             }
         }
