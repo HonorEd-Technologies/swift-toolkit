@@ -4212,6 +4212,93 @@ function initializeAccessibility(doubleTapLabel, energyBarLabel) {
       element.setAttribute("role", "button")
       element.setAttribute("aria-label", text)
     }
+    
+    /*
+     Given a locator, it will look for decorations (annotations + shared annotations) associated with that locator, so
+     it will animate the found HTML decorator, so, it will move to the right, then it will return to original position
+     */
+    function animateDecorationsFromLocator(locator) {
+        let sharedAnnotationsElements = getSharedAnnotationsItemsForLocator(locator)
+        let annotationsElements = getAnnotationsItemsForLocator(locator)
+        let elements = sharedAnnotationsElements.concat(annotationsElements)
+        elements.forEach(element => {
+            animate(element, 0, true)
+        });
+    }
+
+    function getSharedAnnotationsItemsForLocator(locator) {
+        var elements = []
+        let foundGroupSharedAnnotation = window.readium.getDecorations('sharedAnnotation')
+        if (!foundGroupSharedAnnotation) {
+            return elements
+        }
+        
+        // Search for items in Shared Annotations
+        const itemCount = foundGroupSharedAnnotation.items.length
+        for (var i = 0; i < itemCount; i++) {
+            const item = foundGroupSharedAnnotation.items[i]
+            if (locator.text.highlight === item.decoration.locator.text.highlight
+                && locator.text.before === item.decoration.locator.text.before
+                && locator.text.after === item.decoration.locator.text.after) {
+                elements.push(item.container.firstChild)
+            }
+        }
+        
+        return elements
+    }
+    
+    function getAnnotationsItemsForLocator(locator) {
+        var elements = []
+        let foundGroupAnnotations = window.readium.getDecorations('annotation')
+        if (!foundGroupAnnotations) {
+            return elements
+        }
+        
+        // Search for the annotations items
+        const itemCount = foundGroupAnnotations.items.length
+        for (var i = 0; i < itemCount; i++) {
+            const item = foundGroupAnnotations.items[i]
+            let foundRectLocator = rectFromLocatorText(locator)
+            let foundRectItem = rectFromLocatorText(item.decoration.locator)
+            if (!foundRectLocator || !foundRectItem) {
+                continue
+            }
+            
+            if (rectanglesIntersect(foundRectLocator, foundRectItem)) {
+                elements.push(item.container.firstChild)
+            }
+        }
+        
+        return elements
+    }
+    
+    /*
+     Executes an animation on a HTML element, my moving the element some pixels to the right, then returning back the element
+     to its original position
+    */
+    function animate(element, startTime, forward) {
+        const duration = 100; // Duration of the animation in milliseconds
+        const targetX = 10; // Target translation in pixels
+        
+        // This function calculates the position of the element and updates its X coordinate accordinglt at each frame of the animation
+        function step(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const progress = timestamp - startTime;
+            const proportion = Math.min(progress / duration, 1);
+            
+            const translateX = forward ? proportion * targetX : (1 - proportion) * targetX;
+            element.style.transform = `translateX(${translateX}px)`;
+            if (progress < duration) {
+                // This method provided by JS ensures smooth and efficient updateds by syncing the animation with the display's refresh rate
+                requestAnimationFrame(step);
+            } else if (forward) {
+                // Start the reverse animation
+                requestAnimationFrame(timestamp => animate(element, timestamp, false));
+            }
+        }
+        
+        requestAnimationFrame(step);
+    }
 
     // Removes an Aria-Label from the element
     function removeArialLabel(element, ariaLabel) {
@@ -4880,6 +4967,7 @@ setAccessibility: setAccessibility,
   selectionText: selectionText,
   rectFromLocatorText: rectFromLocatorText,
   rectsFromLocatorText: rectsFromLocatorText,
+  animateDecorationsFromLocator: animateDecorationsFromLocator,
   updateEndOfSpread: updateEndOfSpread,
   locatorFromRect: locatorFromRect,
   addAccessibilityEnergyBar: addAccessibilityEnergyBar,
