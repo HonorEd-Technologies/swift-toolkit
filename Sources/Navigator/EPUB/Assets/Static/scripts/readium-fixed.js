@@ -4221,40 +4221,6 @@ function initializeAccessibility(doubleTapLabel, energyBarLabel) {
         let sharedAnnotationsElements = getSharedAnnotationsItemsForLocator(locator)
         let annotationsElements = getAnnotationsItemsForLocator(locator)
         let elements = sharedAnnotationsElements.concat(annotationsElements)
-        /*
-        let foundGroupSharedAnnotation = window.readium.getDecorations('sharedAnnotation')
-        let foundGroupAnnotations = window.readium.getDecorations('annotation')
-        if (!foundGroupSharedAnnotation || !foundGroupAnnotations) {
-            return
-        }
-
-        var elements = [];
-        
-        // Search for items in Shared Annotations
-        const itemCountSharedAnnotation = foundGroupSharedAnnotation.items.length
-        for (var i = 0; i < itemCountSharedAnnotation; i++) {
-            const item = foundGroupSharedAnnotation.items[i]
-            if (locator.text.highlight === item.decoration.locator.text.highlight) {
-                elements.push(item.container.firstChild);
-            }
-        }
-        
-        // Search for the annotations items
-        const itemCountAnnotations = foundGroupAnnotations.items.length
-        for (var i = 0; i < itemCountAnnotations; i++) {
-            const item = foundGroupAnnotations.items[i]
-            let foundRectLocator = rectFromLocatorText(locator)
-            let foundRectItem = rectFromLocatorText(item.decoration.locator)
-            if (!foundRectLocator || !foundRectItem) {
-                continue;
-            }
-            
-            if (rectanglesIntersect(foundRectLocator, foundRectItem)) {
-                elements.push(item.container.firstChild);
-            }
-        }
-        */
-        
         elements.forEach(element => {
             animate(element, 0, true);
         });
