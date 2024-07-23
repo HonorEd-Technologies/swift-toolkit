@@ -4277,7 +4277,7 @@ function initializeAccessibility(doubleTapLabel, energyBarLabel) {
      to its original position
     */
     function animate(element, startTime, forward) {
-        const duration = 100; // Duration of the animation in milliseconds
+        const duration = 250; // Duration of the animation in milliseconds
         const targetX = 10; // Target translation in pixels
         
         // This function calculates the position of the element and updates its X coordinate accordinglt at each frame of the animation
@@ -4286,10 +4286,12 @@ function initializeAccessibility(doubleTapLabel, energyBarLabel) {
             const progress = timestamp - startTime;
             const proportion = Math.min(progress / duration, 1);
             
-            const translateX = forward ? proportion * targetX : (1 - proportion) * targetX;
+            // Apply easing function
+            const easedProportion = easeInOutQuad(proportion);
+            const translateX = forward ? easedProportion * targetX : (1 - easedProportion) * targetX;
             element.style.transform = `translateX(${translateX}px)`;
             if (progress < duration) {
-                // This method provided by JS ensures smooth and efficient updateds by syncing the animation with the display's refresh rate
+                // This method provided by JS ensures smooth and efficient updates by syncing the animation with the display's refresh rate
                 requestAnimationFrame(step);
             } else if (forward) {
                 // Start the reverse animation
@@ -4298,6 +4300,11 @@ function initializeAccessibility(doubleTapLabel, energyBarLabel) {
         }
         
         requestAnimationFrame(step);
+    }
+    
+    // Easing function (EaseInOutQuad)
+    function easeInOutQuad(t) {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
     }
 
     // Removes an Aria-Label from the element
