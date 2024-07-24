@@ -377,6 +377,11 @@ final class PaginationView: UIView, Loggable {
                 completion()
             }
         }
+        
+        if index == currentIndex, let view = currentView {
+            view.go(to: location, completion: completion)
+            return true
+        }
 
         fade(to: 0) {
             self.scrollToView(at: index, location: location) {
