@@ -315,7 +315,7 @@ final class EPUBReflowableSpreadView: EPUBSpreadView {
             completion(false)
             return
         }
-        evaluateScript("readium.scrollToText(\(json));") { result in
+        evaluateScript("readium.scrollTextToTop(\(json));") { result in
             switch result {
             case .success(let value):
                 completion((value as? Bool) ?? false)

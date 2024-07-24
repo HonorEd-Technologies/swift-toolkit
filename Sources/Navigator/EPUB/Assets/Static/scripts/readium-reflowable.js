@@ -4958,6 +4958,7 @@ window.readium = {
   scrollToId: _utils__WEBPACK_IMPORTED_MODULE_1__.scrollToId,
   scrollToPosition: _utils__WEBPACK_IMPORTED_MODULE_1__.scrollToPosition,
   scrollToText: _utils__WEBPACK_IMPORTED_MODULE_1__.scrollToText,
+  scrollTextToTop: _utils__WEBPACK_IMPORTED_MODULE_1__.scrollTextToTop,
   scrollLeft: _utils__WEBPACK_IMPORTED_MODULE_1__.scrollLeft,
   scrollRight: _utils__WEBPACK_IMPORTED_MODULE_1__.scrollRight,
   setProperty: _utils__WEBPACK_IMPORTED_MODULE_1__.setProperty,
@@ -5578,6 +5579,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "scrollToId": () => (/* binding */ scrollToId),
 /* harmony export */   "scrollToPosition": () => (/* binding */ scrollToPosition),
 /* harmony export */   "scrollToText": () => (/* binding */ scrollToText),
+/* harmony export */   "scrollTextToTop": () => (/* binding */ scrollTextToTop),
 /* harmony export */   "scrollLeft": () => (/* binding */ scrollLeft),
 /* harmony export */   "scrollRight": () => (/* binding */ scrollRight),
 /* harmony export */   "rangeFromLocator": () => (/* binding */ rangeFromLocator),
@@ -5746,7 +5748,7 @@ function scrollToId(id) {
     return false;
   }
 
-  scrollToRect(element.getBoundingClientRect(), false);
+  scrollToRect(element.getBoundingClientRect(), false, 0);
   return true;
 }
 
@@ -5774,6 +5776,17 @@ function scrollToPosition(position, dir) {
 //
 // The expected text argument is a Locator Text object, as defined here:
 // https://readium.org/architecture/models/locators/
+    
+function scrollTextToTop(text) {
+    let topPadding = 100
+    let range = rangeFromLocator({ text });
+    if (!range) {
+      return false;
+    }
+    scrollToRect(range.getBoundingClientRect(), false, topPadding)
+    return true
+}
+    
 function scrollToText(text) {
   let range = rangeFromLocator({ text });
   if (!range) {
@@ -5784,16 +5797,16 @@ function scrollToText(text) {
 }
 
 function scrollToRange(range) {
-  scrollToRect(range.getBoundingClientRect(), true);
+  scrollToRect(range.getBoundingClientRect(), true, 0);
 }
 
-function scrollToRect(rect, verticallyCenter) {
+function scrollToRect(rect, verticallyCenter, offset) {
   if (isScrollModeEnabled()) {
     if (verticallyCenter) {
-      document.scrollingElement.scrollTop = rect.top + window.scrollY - window.innerHeight / 2;
+      document.scrollingElement.scrollTop = (rect.top + window.scrollY - window.innerHeight / 2) - offset;
     }
     else {
-      document.scrollingElement.scrollTop = rect.top + window.scrollY;
+      document.scrollingElement.scrollTop = rect.top + window.scrollY - offset;
     }
   } else {
     document.scrollingElement.scrollLeft = snapOffset(
