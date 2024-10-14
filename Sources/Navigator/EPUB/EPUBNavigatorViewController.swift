@@ -951,13 +951,23 @@ extension EPUBNavigatorViewController: EPUBSpreadViewDelegate {
                 return
             }
         }
-            
-        if let trimmedToc = config.trimmedToc, !trimmedToc.contains(where: { $0.href == href }) {
+        let trimmedHref = href.prefix { $0 != "#" }
+        if let id = href.components(separatedBy: "#").last {
+            spreadView.evaluateScript("window.readium.doesElementExist(\"\(id)\")") { [weak self] val in
+                if case let .success(doesExist) = val, doesExist as? Bool == true {
+                    self?.go(to: Link(href: href))
+                } else if let trimmedToc = self?.config.trimmedToc,
+                          !trimmedToc.contains(where: { $0.href == href }) {
+                    self?.delegate?.handleTapOnTrimmedInternalLink(link: href)
+                } else {
+                    self?.go(to: Link(href: href))
+                }
+            }
+        } else if let trimmedToc = config.trimmedToc, !trimmedToc.contains(where: { $0.href == href }) {
             self.delegate?.handleTapOnTrimmedInternalLink(link: href)
         } else {
             go(to: Link(href: href))
         }
-        
     }
     
     /// Checks if the internal link is a noteref, and retrieves both the referring text of the link and the body of the note.
