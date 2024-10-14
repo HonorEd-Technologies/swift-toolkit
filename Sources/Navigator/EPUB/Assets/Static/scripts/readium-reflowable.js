@@ -4955,6 +4955,7 @@ function selectionText(totalText) {
 // Public API used by the navigator.
 window.readium = {
   // utils
+  doesElementExist: _utils__WEBPACK_IMPORTED_MODULE_1__.doesElementExist,
   scrollToId: _utils__WEBPACK_IMPORTED_MODULE_1__.scrollToId,
   scrollToPosition: _utils__WEBPACK_IMPORTED_MODULE_1__.scrollToPosition,
   scrollToText: _utils__WEBPACK_IMPORTED_MODULE_1__.scrollToText,
@@ -5576,6 +5577,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "getColumnCountPerScreen": () => (/* binding */ getColumnCountPerScreen),
 /* harmony export */   "isScrollModeEnabled": () => (/* binding */ isScrollModeEnabled),
+/* harmony export */   "doesElementExist": () => (/* binding */ doesElementExist),
 /* harmony export */   "scrollToId": () => (/* binding */ scrollToId),
 /* harmony export */   "scrollToPosition": () => (/* binding */ scrollToPosition),
 /* harmony export */   "scrollToText": () => (/* binding */ scrollToText),
@@ -5813,6 +5815,11 @@ function scrollToRect(rect, verticallyCenter, offset) {
       rect.left + window.scrollX
     );
   }
+}
+    
+function doesElementExist(id) {
+  var element = document.getElementById(id)
+  return element != undefined
 }
 
 // Returns false if the page is already at the left-most scroll offset.
