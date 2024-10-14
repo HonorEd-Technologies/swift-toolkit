@@ -80,7 +80,7 @@ public func findEndTagFromEndString(within content: String, tag: String, endStri
     let matches = matches(for: endTag, in: content)
     if matches.count - 1 - position >= 0 && position >= 0 {
         let match = matches[matches.count - position - 1]
-        endString = String(content[content.index(content.startIndex, offsetBy: match.lowerBound)..<content.endIndex])
+        endString = String(content.unicodeScalars[content.unicodeScalars.index(content.unicodeScalars.startIndex, offsetBy: match.lowerBound)..<content.unicodeScalars.endIndex])
     } else {
         endString = ("</\(tag)>\n") + endString
     }
