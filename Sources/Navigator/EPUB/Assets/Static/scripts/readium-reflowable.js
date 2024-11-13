@@ -3906,7 +3906,7 @@ function DecorationGroup(groupId, groupName) {
         element.style.left = `${rect.left + xOffset}px`;
         element.style.top = `${rect.top + yOffset}px`;
       } else if (style.width === "viewport") {
-        element.style.width = `${viewportWidth}px`;
+        element.style.width = "100%";
         element.style.height = `${rect.height}px`;
         let left = Math.floor(rect.left / viewportWidth) * viewportWidth;
         element.style.left = `${left + xOffset}px`;
