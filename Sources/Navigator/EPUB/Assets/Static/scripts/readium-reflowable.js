@@ -4797,6 +4797,15 @@ function locatorFromRect(rect, hrefIds) {
     return rangeToLocator(range, hrefIds);
 }
 
+function updateSelection(locator) {
+    const range = rangeFromLocator(locator);
+    const selection = window.getSelection();
+    
+    // Clear previous selections and apply the new one
+    selection.removeAllRanges();
+    selection.addRange(range);
+}
+
 function trimRangeAbove(range, textNodesInRange, rect) {
   const shouldContinueTrimmingAbove = (rnge) => {
     if (!rnge || rnge.collapsed) {
@@ -4970,7 +4979,7 @@ window.readium = {
   getDecorations: _decorator__WEBPACK_IMPORTED_MODULE_2__.getDecorations,
   initializeIntersectionObserver: initializeIntersectionObserver,
   initializeAccessibility: initializeAccessibility,
-setAccessibility: setAccessibility,
+  setAccessibility: setAccessibility,
   rectsFromTexts: rectsFromTexts,
   textFromRect: textFromRect,
   rectFromPoint: rectFromPoint,
@@ -4980,6 +4989,7 @@ setAccessibility: setAccessibility,
   animateDecorationsFromLocator: animateDecorationsFromLocator,
   updateEndOfSpread: updateEndOfSpread,
   locatorFromRect: locatorFromRect,
+  updateSelection: updateSelection,
   addAccessibilityEnergyBar: addAccessibilityEnergyBar,
   addAccessibilityUserAnnotation: addAccessibilityUserAnnotation,
   removeAccessibilityEnergyBar: removeAccessibilityEnergyBar,
