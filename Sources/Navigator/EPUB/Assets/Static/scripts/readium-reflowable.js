@@ -4797,13 +4797,26 @@ function locatorFromRect(rect, hrefIds) {
     return rangeToLocator(range, hrefIds);
 }
 
-function updateSelection(locator) {
-    const range = _utils__WEBPACK_IMPORTED_MODULE_1__.rangeFromLocator(locator);
-    const selection = window.getSelection();
-    
-    // Clear previous selections and apply the new one
-    selection.removeAllRanges();
-    selection.addRange(range);
+function updateSelection(href, before, after, highlight) {
+  let locator = {
+      href: href,
+      text: {
+          before: before,
+          after: after,
+          highlight: highlight
+      }
+  };
+  const range = _utils__WEBPACK_IMPORTED_MODULE_1__.rangeFromLocator(locator);
+  const selection = window.getSelection();
+  
+  // Clear previous selections and apply the new one
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
+function clearSelection() {
+  const selection = window.getSelection();
+  selection.removeAllRanges();
 }
 
 function trimRangeAbove(range, textNodesInRange, rect) {
@@ -4990,6 +5003,7 @@ window.readium = {
   updateEndOfSpread: updateEndOfSpread,
   locatorFromRect: locatorFromRect,
   updateSelection: updateSelection,
+  clearSelection: clearSelection,
   addAccessibilityEnergyBar: addAccessibilityEnergyBar,
   addAccessibilityUserAnnotation: addAccessibilityUserAnnotation,
   removeAccessibilityEnergyBar: removeAccessibilityEnergyBar,
