@@ -4798,10 +4798,10 @@ function locatorFromRect(rect, hrefIds) {
 }
 
 function updateSelection(hrefString, beforeString, afterString, highlightString) {
-  let hrefValue = "" + `${hrefString}`
-  let beforeValue = "" + `${beforeString}`
-  let afterValue = "" + `${afterString}`
-  let highlightValue = "" + `${highlightString}`
+  let hrefValue = "" + `${hrefString}`;
+  let beforeValue = "" + `${beforeString}`;
+  let afterValue = "" + `${afterString}`;
+  let highlightValue = "" + `${highlightString}`;
   let locator = {
       href: hrefValue,
       text: {
@@ -4811,7 +4811,7 @@ function updateSelection(hrefString, beforeString, afterString, highlightString)
       }
   };
   
-  console.log("Locator:" + locator);
+  console.log("Locator:", locator);
 
   const range = _utils__WEBPACK_IMPORTED_MODULE_1__.rangeFromLocator(locator);
   const selection = window.getSelection();
