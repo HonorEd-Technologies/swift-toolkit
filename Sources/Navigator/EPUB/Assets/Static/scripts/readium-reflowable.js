@@ -4799,11 +4799,11 @@ function locatorFromRect(rect, hrefIds) {
 
 function updateSelection(href_string, before_string, after_string, highlight_string) {
   let locator = {
-      href: `${href_string}`,
+      href: String(href_string),
       text: {
-          before: `${before_string}`,
-          after: `${after_string}`,
-          highlight: `${highlight_string}`
+          before: String(before_string),
+          after: String(after_string),
+          highlight: String(highlight_string)
       }
   };
   const range = _utils__WEBPACK_IMPORTED_MODULE_1__.rangeFromLocator(locator);
