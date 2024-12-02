@@ -4797,15 +4797,22 @@ function locatorFromRect(rect, hrefIds) {
     return rangeToLocator(range, hrefIds);
 }
 
-function updateSelection(href_string, before_string, after_string, highlight_string) {
+function updateSelection(hrefString, beforeString, afterString, highlightString) {
+  let hrefValue = "" + `${hrefString}`
+  let beforeValue = "" + `${beforeString}`
+  let afterValue = "" + `${afterString}`
+  let highlightValue = "" + `${highlightString}`
   let locator = {
-      href: `${href_string}` + "",
+      href: hrefValue,
       text: {
-          before: `${before_string}` + "",
-          after: `${after_string}` + "",
-          highlight: `${highlight_string}` + ""
+          before: beforeValue,
+          after: afterValue,
+          highlight: highlightValue
       }
   };
+  
+  console.log("Locator:" + locator);
+
   const range = _utils__WEBPACK_IMPORTED_MODULE_1__.rangeFromLocator(locator);
   const selection = window.getSelection();
   
