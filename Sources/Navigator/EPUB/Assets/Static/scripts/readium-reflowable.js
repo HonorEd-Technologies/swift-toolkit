@@ -4797,13 +4797,13 @@ function locatorFromRect(rect, hrefIds) {
     return rangeToLocator(range, hrefIds);
 }
 
-function updateSelection(href, before, after, highlight) {
+function updateSelection(href_string, before_string, after_string, highlight_string) {
   let locator = {
-      href: href,
+      href: href_string,
       text: {
-          before: before,
-          after: after,
-          highlight: highlight
+          before: before_string,
+          after: after_string,
+          highlight: highlight_string
       }
   };
   const range = _utils__WEBPACK_IMPORTED_MODULE_1__.rangeFromLocator(locator);
