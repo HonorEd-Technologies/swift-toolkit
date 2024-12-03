@@ -4821,6 +4821,15 @@ function updateSelection(hrefString, beforeString, afterString, highlightString)
   selection.addRange(range);
 }
 
+function updateSelectionWithLocator(locator) {
+  const range = _utils__WEBPACK_IMPORTED_MODULE_1__.rangeFromLocator(locator);
+  const selection = window.getSelection();
+  
+  // Clear previous selections and apply the new one
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
 function clearSelection() {
   const selection = window.getSelection();
   selection.removeAllRanges();
@@ -5010,6 +5019,7 @@ window.readium = {
   updateEndOfSpread: updateEndOfSpread,
   locatorFromRect: locatorFromRect,
   updateSelection: updateSelection,
+  updateSelectionWithLocator: updateSelectionWithLocator,
   clearSelection: clearSelection,
   addAccessibilityEnergyBar: addAccessibilityEnergyBar,
   addAccessibilityUserAnnotation: addAccessibilityUserAnnotation,
