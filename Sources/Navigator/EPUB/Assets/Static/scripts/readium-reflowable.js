@@ -4797,31 +4797,7 @@ function locatorFromRect(rect, hrefIds) {
     return rangeToLocator(range, hrefIds);
 }
 
-function updateSelection(hrefString, beforeString, afterString, highlightString) {
-  let hrefValue = "" + `${hrefString}`;
-  let beforeValue = "" + `${beforeString}`;
-  let afterValue = "" + `${afterString}`;
-  let highlightValue = "" + `${highlightString}`;
-  let locator = {
-      href: hrefValue,
-      text: {
-          before: beforeValue,
-          after: afterValue,
-          highlight: highlightValue
-      }
-  };
-  
-  console.log("Locator:", locator);
-
-  const range = _utils__WEBPACK_IMPORTED_MODULE_1__.rangeFromLocator(locator);
-  const selection = window.getSelection();
-  
-  // Clear previous selections and apply the new one
-  selection.removeAllRanges();
-  selection.addRange(range);
-}
-
-function updateSelectionWithLocator(locator) {
+function updateSelection(locator) {
   const range = _utils__WEBPACK_IMPORTED_MODULE_1__.rangeFromLocator(locator);
   const selection = window.getSelection();
   
@@ -4833,6 +4809,14 @@ function updateSelectionWithLocator(locator) {
 function clearSelection() {
   const selection = window.getSelection();
   selection.removeAllRanges();
+}
+
+function rangesFromLocatorText(locators) {
+  let ranges = locators.map((locator) => {
+      return _utils__WEBPACK_IMPORTED_MODULE_1__.rangeFromLocator(locator);
+  })
+  //return rects.filter((rect) => rect)
+  return ranges
 }
 
 function trimRangeAbove(range, textNodesInRange, rect) {
@@ -5019,8 +5003,8 @@ window.readium = {
   updateEndOfSpread: updateEndOfSpread,
   locatorFromRect: locatorFromRect,
   updateSelection: updateSelection,
-  updateSelectionWithLocator: updateSelectionWithLocator,
   clearSelection: clearSelection,
+  rangesFromLocatorText: rangesFromLocatorText,
   addAccessibilityEnergyBar: addAccessibilityEnergyBar,
   addAccessibilityUserAnnotation: addAccessibilityUserAnnotation,
   removeAccessibilityEnergyBar: removeAccessibilityEnergyBar,
