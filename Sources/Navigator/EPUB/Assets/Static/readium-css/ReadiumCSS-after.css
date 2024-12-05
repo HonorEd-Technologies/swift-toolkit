@@ -159,35 +159,6 @@ body {
   box-sizing: border-box;
 }
 
-/* We’ll now redefine margins and columns depending on the minimum width available
-   The goal is having the simplest model possible and avoid targeting devices */
-
-/* Smartphone landscape */
-
-@media screen and (min-width: 35em) {
-  :root {
-    --RS__pageGutter: 30px;
-  }
-}
-
-/* Tablet portrait */
-
-@media screen and (min-width: 45em) {
-  :root {
-    --RS__pageGutter: 40px;
-  }
-}
-
-/* Desktop + tablet large */
-
-/* We get the previous settings, we just change the margins */
-
-@media screen and (min-width: 75em) {
-  :root {
-    --RS__pageGutter: 50px;
-  }
-}
-
 /* At this point (80em or so), constraining line length must be done at the web view/iframe level, or by limiting the size of :root itself */
 
 /* Responsive columns */
@@ -764,6 +735,10 @@ body {
 :root[style*="readium-advanced-on"][style*="--USER__paraIndent"] p *,
 :root[style*="readium-advanced-on"][style*="--USER__paraIndent"] p:first-letter {
   text-indent: 0 !important;
+}
+
+:root[style*="--USER__contentWidth"] body {
+    width: var(--USER__contentWidth) !important
 }
 
 /* Readium CSS

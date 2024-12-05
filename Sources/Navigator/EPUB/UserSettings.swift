@@ -37,6 +37,7 @@ public class UserSettings {
     private var pageMargins: Float
     private var lineHeight: Float
     private var paragraphMargins: Float?
+    private var contentWidth: String?
     
     public let userProperties = UserProperties()
     
@@ -93,7 +94,8 @@ public class UserSettings {
         letterSpacing: Float = 0,
         pageMargins: Float = 1,
         lineHeight: Float = 1.5,
-        paragraphMargins: Float? = nil
+        paragraphMargins: Float? = nil,
+        contentWidth: String? = nil
     ) {
 
         /// Check if a given key is set in the UserDefaults.
@@ -206,6 +208,12 @@ public class UserSettings {
             self.paragraphMargins = userDefaults.float(forKey: ReadiumCSSName.paragraphMargins.rawValue)
         } else {
             self.paragraphMargins = paragraphMargins
+        }
+        
+        if isKeyPresentInUserDefaults(key: ReadiumCSSName.contentWidth) {
+            self.contentWidth = userDefaults.string(forKey: ReadiumCSSName.contentWidth.rawValue)
+        } else {
+            self.contentWidth = contentWidth
         }
 
         buildCssProperties()
@@ -322,6 +330,8 @@ public class UserSettings {
                                             reference: ReadiumCSSReference.paragraphMargins.rawValue,
                                             name: ReadiumCSSName.paragraphMargins.rawValue)
         }
+        
+        userProperties.addString(value: contentWidth, reference: ReadiumCSSReference.contentWidth.rawValue, name: ReadiumCSSName.contentWidth.rawValue)
     }
     
     // Save settings to UserDefaults

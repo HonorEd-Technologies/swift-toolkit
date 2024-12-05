@@ -351,10 +351,16 @@ open class EPUBNavigatorViewController: UIViewController, VisualNavigator, Selec
     
     open override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
-        
-        coordinator.animate(alongsideTransition: { [weak self] context in
+        if self.savedLocation == nil {
+            self.savedLocation = currentLocation
+        }
+        coordinator.animate { [weak self] context in
             self?.reloadSpreads()
-        })
+        }
+        /// the pagination view under the hood is waiting on the main queue for 0.5 seconds to go to the location. Multiple rapid screen orientation changes causes us to lose this ephemeral state and reset the location to the beginning of the chapter, so we wait 1 second to nil out this optional `savedLocation`
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            self?.savedLocation = nil
+        }
     }
 
     @discardableResult
@@ -511,7 +517,7 @@ open class EPUBNavigatorViewController: UIViewController, VisualNavigator, Selec
             return
         }
 
-        let locator = locator ?? currentLocation
+        let locator = locator ?? savedLocation ?? currentLocation
         spreads = EPUBSpread.makeSpreads(for: publication, readingProgression: readingProgression, pageCountPerSpread: pageCountPerSpread)
         
         var initialIndex: Int
@@ -578,7 +584,7 @@ open class EPUBNavigatorViewController: UIViewController, VisualNavigator, Selec
         
         let link = spreadView.focusedResource ?? spreadView.spread.leading
         let href = link.href
-        var progression = min(max(spreadView.progression(in: href), 0.0), 1.0)
+        let progression = min(max(spreadView.progression(in: href), 0.0), 1.0)
         
         // The positions are not always available, for example a Readium WebPub doesn't have any
         // unless a Publication Positions Web Service is provided.
@@ -599,6 +605,8 @@ open class EPUBNavigatorViewController: UIViewController, VisualNavigator, Selec
             )
         }
     }
+    
+    public var savedLocation: Locator?
 
     /// Last current location notified to the delegate.
     /// Used to avoid sending twice the same location.
