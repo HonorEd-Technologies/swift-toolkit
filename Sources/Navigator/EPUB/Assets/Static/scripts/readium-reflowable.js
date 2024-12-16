@@ -4811,10 +4811,15 @@ function clearSelection() {
   selection.removeAllRanges();
 }
 
-function locatorsOverlap(firstLocator, secondLocator) {
-  let firstRect = rectFromLocatorText(firstLocator)
-  let secondRect = rectFromLocatorText(secondLocator)
-  return rectanglesIntersect(firstRect, secondRect)
+function locatorsOverlap(firstLocator, locatorsArray) {
+  let firstRect = rectFromLocatorText(firstLocator);
+  for (let secondLocator of locatorsArray) {
+    let secondRect = rectFromLocatorText(secondLocator);
+    if (rectanglesIntersect(firstRect, secondRect)) {
+      return true; // Found an intersection, stop iteration
+    }
+  }
+  return false; // No intersections found
 }
 
 function rangesFromLocatorText(locators) {
