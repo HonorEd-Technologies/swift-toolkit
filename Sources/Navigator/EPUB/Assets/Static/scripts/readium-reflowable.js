@@ -4811,6 +4811,12 @@ function clearSelection() {
   selection.removeAllRanges();
 }
 
+function locatorsOverlap(firstLocator, secondLocator) {
+  let firstRect = rectFromLocatorText(firstLocator)
+  let secondRect = rectFromLocatorText(secondLocator)
+  return rectanglesIntersect(firstRect, secondRect)
+}
+
 function rangesFromLocatorText(locators) {
   let ranges = locators.map((locator) => {
       return _utils__WEBPACK_IMPORTED_MODULE_1__.rangeFromLocator(locator);
@@ -5004,6 +5010,7 @@ window.readium = {
   locatorFromRect: locatorFromRect,
   updateSelection: updateSelection,
   clearSelection: clearSelection,
+  locatorsOverlap: locatorsOverlap,
   rangesFromLocatorText: rangesFromLocatorText,
   addAccessibilityEnergyBar: addAccessibilityEnergyBar,
   addAccessibilityUserAnnotation: addAccessibilityUserAnnotation,
