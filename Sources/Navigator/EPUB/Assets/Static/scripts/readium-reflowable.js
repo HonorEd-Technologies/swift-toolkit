@@ -4802,13 +4802,17 @@ function updateSelection(locator) {
   const selection = window.getSelection();
   
   // Clear previous selections and apply the new one
-  selection.removeAllRanges();
+  if (selection.rangeCount > 0) {
+    selection.removeAllRanges();
+  }
   selection.addRange(range);
 }
 
 function clearSelection() {
   const selection = window.getSelection();
-  selection.removeAllRanges();
+  if (selection.rangeCount > 0) {
+    selection.removeAllRanges();
+  }
 }
 
 function locatorsOverlap(firstLocator, locatorsArray) {
