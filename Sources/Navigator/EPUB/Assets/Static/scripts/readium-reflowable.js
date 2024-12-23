@@ -4797,6 +4797,24 @@ function locatorFromRect(rect, hrefIds) {
     return rangeToLocator(range, hrefIds);
 }
 
+function updateSelection(locator) {
+  const range = _utils__WEBPACK_IMPORTED_MODULE_1__.rangeFromLocator(locator);
+  const selection = window.getSelection();
+  
+  // Clear previous selections and apply the new one
+  if (selection.rangeCount > 0) {
+    selection.removeAllRanges();
+  }
+  selection.addRange(range);
+}
+
+function clearSelection() {
+  const selection = window.getSelection();
+  if (selection.rangeCount > 0) {
+    selection.removeAllRanges();
+  }
+}
+
 function trimRangeAbove(range, textNodesInRange, rect) {
   const shouldContinueTrimmingAbove = (rnge) => {
     if (!rnge || rnge.collapsed) {
@@ -4970,7 +4988,7 @@ window.readium = {
   getDecorations: _decorator__WEBPACK_IMPORTED_MODULE_2__.getDecorations,
   initializeIntersectionObserver: initializeIntersectionObserver,
   initializeAccessibility: initializeAccessibility,
-setAccessibility: setAccessibility,
+  setAccessibility: setAccessibility,
   rectsFromTexts: rectsFromTexts,
   textFromRect: textFromRect,
   rectFromPoint: rectFromPoint,
@@ -4980,6 +4998,8 @@ setAccessibility: setAccessibility,
   animateDecorationsFromLocator: animateDecorationsFromLocator,
   updateEndOfSpread: updateEndOfSpread,
   locatorFromRect: locatorFromRect,
+  updateSelection: updateSelection,
+  clearSelection: clearSelection,
   addAccessibilityEnergyBar: addAccessibilityEnergyBar,
   addAccessibilityUserAnnotation: addAccessibilityUserAnnotation,
   removeAccessibilityEnergyBar: removeAccessibilityEnergyBar,
