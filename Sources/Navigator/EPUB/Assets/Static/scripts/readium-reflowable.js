@@ -4815,25 +4815,6 @@ function clearSelection() {
   }
 }
 
-function locatorsOverlap(firstLocator, locatorsArray) {
-  let firstRect = rectFromLocatorText(firstLocator);
-  for (let secondLocator of locatorsArray) {
-    let secondRect = rectFromLocatorText(secondLocator);
-    if (rectanglesIntersect(firstRect, secondRect)) {
-      return true; // Found an intersection, stop iteration
-    }
-  }
-  return false; // No intersections found
-}
-
-function rangesFromLocatorText(locators) {
-  let ranges = locators.map((locator) => {
-      return _utils__WEBPACK_IMPORTED_MODULE_1__.rangeFromLocator(locator);
-  })
-  //return rects.filter((rect) => rect)
-  return ranges
-}
-
 function trimRangeAbove(range, textNodesInRange, rect) {
   const shouldContinueTrimmingAbove = (rnge) => {
     if (!rnge || rnge.collapsed) {
@@ -5019,8 +5000,6 @@ window.readium = {
   locatorFromRect: locatorFromRect,
   updateSelection: updateSelection,
   clearSelection: clearSelection,
-  locatorsOverlap: locatorsOverlap,
-  rangesFromLocatorText: rangesFromLocatorText,
   addAccessibilityEnergyBar: addAccessibilityEnergyBar,
   addAccessibilityUserAnnotation: addAccessibilityUserAnnotation,
   removeAccessibilityEnergyBar: removeAccessibilityEnergyBar,
