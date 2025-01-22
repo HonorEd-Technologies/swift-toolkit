@@ -4835,7 +4835,7 @@ function scrollToSelectionIfNeeded(sheetHeight) {
 
   if (!rectanglesIntersect(selectedRect, viewPortRect)) {
     // Calculate the amount to scroll
-    const scrollY = selectedRect.y + selectedRect.height + (viewportHeight / 2);
+    const scrollY = selectedRect.y + selectedRect.height + (viewPortRect.height / 2);
 
     // Smoothly scroll to the calculated position
     window.scrollTo({
