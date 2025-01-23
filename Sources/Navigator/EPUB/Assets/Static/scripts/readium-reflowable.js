@@ -4815,6 +4815,43 @@ function clearSelection() {
   }
 }
 
+function scrollToSelectionIfNeeded(sheetHeight) {
+  const selection = window.getSelection();
+
+  if (!selection || selection.rangeCount === 0 || sheetHeight == 0) {
+      // No text selected
+      return;
+  }
+
+  const range = selection.getRangeAt(0); // Get the first range of the selection
+  const selectedRect = range.getBoundingClientRect(); // Get the bounding box of the selection
+  let selectedRectWithOffset = {
+    x: 0,
+    y: selectedRect.y + window.scrollY,
+    width: selectedRect.width,
+    height: selectedRect.height
+  };
+
+  let viewPortRect = {
+    x: 0,
+    y: window.scrollY,
+    width: window.innerWidth,
+    height: window.innerHeight - sheetHeight
+  };
+
+  if (!rectanglesIntersect(selectedRectWithOffset, viewPortRect)) {
+    // Calculate the amount to scroll
+    const scrollY = selectedRectWithOffset.y - sheetHeight;
+
+    // Smoothly scroll to the calculated position
+    window.scrollTo({
+        left: window.scrollX,
+        top: scrollY,
+        behavior: "smooth"
+    });
+  }
+}
+
 function trimRangeAbove(range, textNodesInRange, rect) {
   const shouldContinueTrimmingAbove = (rnge) => {
     if (!rnge || rnge.collapsed) {
@@ -5000,6 +5037,7 @@ window.readium = {
   locatorFromRect: locatorFromRect,
   updateSelection: updateSelection,
   clearSelection: clearSelection,
+  scrollToSelectionIfNeeded: scrollToSelectionIfNeeded,
   addAccessibilityEnergyBar: addAccessibilityEnergyBar,
   addAccessibilityUserAnnotation: addAccessibilityUserAnnotation,
   removeAccessibilityEnergyBar: removeAccessibilityEnergyBar,
