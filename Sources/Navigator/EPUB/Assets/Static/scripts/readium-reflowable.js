@@ -4825,6 +4825,12 @@ function scrollToSelectionIfNeeded(sheetHeight) {
 
   const range = selection.getRangeAt(0); // Get the first range of the selection
   const selectedRect = range.getBoundingClientRect(); // Get the bounding box of the selection
+  let selectedRectWithOffset = {
+    x: 0,
+    y: selectedRect.y + window.scrollY,
+    width: selectedRect.width,
+    height: selectedRect.height
+  };
 
   let viewPortRect = {
     x: 0,
@@ -4833,9 +4839,9 @@ function scrollToSelectionIfNeeded(sheetHeight) {
     height: window.innerHeight - sheetHeight
   };
 
-  if (!rectanglesIntersect(selectedRect, viewPortRect)) {
+  if (!rectanglesIntersect(selectedRectWithOffset, viewPortRect)) {
     // Calculate the amount to scroll
-    const scrollY = selectedRect.y + selectedRect.height + (viewPortRect.height / 2);
+    const scrollY = selectedRectWithOffset.y + selectedRectWithOffset.height + (viewPortRect.height / 2);
 
     // Smoothly scroll to the calculated position
     window.scrollTo({
