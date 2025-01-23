@@ -4846,7 +4846,7 @@ function scrollToSelectionIfNeeded(sheetHeight) {
     // Smoothly scroll to the calculated position
     window.scrollTo({
         left: window.scrollX,
-        top: scrollY,
+        bottom: scrollY,
         behavior: "smooth"
     });
   }
