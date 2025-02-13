@@ -25,7 +25,7 @@ let package = Package(
         .package(url: "https://github.com/ra1028/DifferenceKit.git", from: "1.2.0"),
         .package(url: "https://github.com/readium/GCDWebServer.git", from: "3.7.0"),
         .package(url: "https://github.com/scinfu/SwiftSoup.git", from: "2.3.2"),
-        .package(url: "https://github.com/stephencelis/SQLite.swift.git", from: "0.12.2"),
+        .package(url: "https://github.com/stephencelis/SQLite.swift.git", from: "0.15.3"),
         // 0.9.12 requires iOS 12+
         .package(url: "https://github.com/weichsel/ZIPFoundation.git", "0.9.0"..<"0.9.12"),
     ],
