@@ -3666,6 +3666,8 @@ function registerTemplates(newStyles) {
     }
   }
 
+  stylesheet += "* { -webkit-touch-callout: none; } \n";
+
   if (stylesheet) {
     let styleElement = document.createElement("style");
     styleElement.innerHTML = stylesheet;
