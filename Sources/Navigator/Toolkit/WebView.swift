@@ -33,7 +33,7 @@ final class WebView: WKWebView {
         isUserInteractionEnabled = false
         isUserInteractionEnabled = true
     }
-
+    
     override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
         return super.canPerformAction(action, withSender: sender)
             && editingActions.canPerformAction(action)
