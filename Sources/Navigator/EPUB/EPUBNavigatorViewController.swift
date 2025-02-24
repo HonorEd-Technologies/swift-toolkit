@@ -92,7 +92,7 @@ open class EPUBNavigatorViewController: UIViewController, VisualNavigator, Selec
         public var trimmedToc: [Link]?
         
         ///  Show selection menu
-        public var showMenu: Bool = true
+        public var showMenu: Bool
         
         public init(
             userSettings: UserSettings = UserSettings(),
@@ -104,7 +104,8 @@ open class EPUBNavigatorViewController: UIViewController, VisualNavigator, Selec
             preloadPreviousPositionCount: Int = 2,
             preloadNextPositionCount: Int = 6,
             decorationTemplates: [Decoration.Style.Id: HTMLDecorationTemplate] = HTMLDecorationTemplate.defaultTemplates(),
-            debugState: Bool = false
+            debugState: Bool = false,
+            showMenu: Bool = true
         ) {
             self.userSettings = userSettings
             self.editingActions = editingActions
@@ -113,6 +114,7 @@ open class EPUBNavigatorViewController: UIViewController, VisualNavigator, Selec
             self.preloadNextPositionCount = preloadNextPositionCount
             self.decorationTemplates = decorationTemplates
             self.debugState = debugState
+            self.showMenu = showMenu
         }
     }
 
