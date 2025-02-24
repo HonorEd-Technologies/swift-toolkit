@@ -88,10 +88,12 @@ final class EditingActionsController {
     private let actions: [EditingAction]
     private let rights: UserRights
     private var isEnabled = true
+    private var showMenu = true
 
-    init(actions: [EditingAction], rights: UserRights) {
+    init(actions: [EditingAction], rights: UserRights, showMenu = true) {
         self.actions = actions
         self.rights = rights
+        self.showMenu = showMenu
     }
 
     /// Current user selection contents and frame in the publication view.
@@ -124,7 +126,7 @@ final class EditingActionsController {
 
     func updateSharedMenuController() {
         var items: [UIMenuItem] = []
-        if isEnabled, let selection = selection {
+        if isEnabled, showMenu, let selection = selection {
             items = actions
                 .filter { delegate?.editingActions(self, canPerformAction: $0, for: selection) ?? true }
                 .compactMap { $0.menuItem }

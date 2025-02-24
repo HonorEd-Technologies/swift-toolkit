@@ -3666,8 +3666,6 @@ function registerTemplates(newStyles) {
     }
   }
 
-  stylesheet += "* { -webkit-touch-callout: none; } \n";
-
   if (stylesheet) {
     let styleElement = document.createElement("style");
     styleElement.innerHTML = stylesheet;
@@ -4072,9 +4070,6 @@ window.addEventListener("DOMContentLoaded", function () {
   document.body.style.cursor = "pointer";
 
   document.addEventListener("click", onClick, false);
-  document.addEventListener("contextmenu", function(event) {
-    event.preventDefault();
-  }, true);
 });
 
 function onClick(event) {

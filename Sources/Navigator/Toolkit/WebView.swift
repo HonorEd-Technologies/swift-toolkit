@@ -35,7 +35,8 @@ final class WebView: WKWebView {
     }
     
     override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
-        return false // Disables all menu actions
+        return super.canPerformAction(action, withSender: sender)
+            && editingActions.canPerformAction(action)
     }
     
     override func copy(_ sender: Any?) {

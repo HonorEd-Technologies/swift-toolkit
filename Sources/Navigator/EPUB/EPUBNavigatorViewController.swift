@@ -91,6 +91,9 @@ open class EPUBNavigatorViewController: UIViewController, VisualNavigator, Selec
         
         public var trimmedToc: [Link]?
         
+        ///  Show selection menu
+        public var showMenu: Bool = true
+        
         public init(
             userSettings: UserSettings = UserSettings(),
             editingActions: [EditingAction] = EditingAction.defaultActions,
@@ -267,7 +270,7 @@ open class EPUBNavigatorViewController: UIViewController, VisualNavigator, Selec
         
         self.publication = publication
         self.initialLocation = initialLocation
-        self.editingActions = EditingActionsController(actions: config.editingActions, rights: publication.rights)
+        self.editingActions = EditingActionsController(actions: config.editingActions, rights: publication.rights, showMenu: config.showMenu)
         self.readingProgression = publication.metadata.effectiveReadingProgression
         self.config = config
         self.userSettings = config.userSettings
