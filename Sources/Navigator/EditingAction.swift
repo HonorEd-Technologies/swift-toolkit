@@ -88,9 +88,9 @@ final class EditingActionsController {
     private let actions: [EditingAction]
     private let rights: UserRights
     private var isEnabled = true
-    private var showMenu = true
+    private var showMenu
 
-    init(actions: [EditingAction], rights: UserRights, showMenu = true) {
+    init(actions: [EditingAction], rights: UserRights, showMenu: Bool = true) {
         self.actions = actions
         self.rights = rights
         self.showMenu = showMenu
