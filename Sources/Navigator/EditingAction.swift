@@ -111,6 +111,7 @@ final class EditingActionsController {
     func canPerformAction(_ selector: Selector) -> Bool {
         guard
             isEnabled,
+            showMenu,
             let selection = selection,
             let action = actions.first(where: { $0.action == selector })
         else {
