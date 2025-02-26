@@ -4799,13 +4799,31 @@ function locatorFromRect(rect, hrefIds) {
 
 function updateSelection(locator) {
   const range = _utils__WEBPACK_IMPORTED_MODULE_1__.rangeFromLocator(locator);
-  const selection = window.getSelection();
+
+  normalizeTextRange(range);
+
+  window.requestAnimationFrame(() => {
+    const selection = window.getSelection();
+    
+    if (selection.rangeCount > 0) {
+      selection.removeAllRanges();
+    }
+    
+    selection.addRange(range);
+
+    if (range.collapsed) {
+      console.warn("Selection is collapsed, might not be visible.");
+    }
+  });
+}
+
+function normalizeTextRange(range) {
+  if (!range || !range.startContainer || !range.endContainer) return;
   
-  // Clear previous selections and apply the new one
-  if (selection.rangeCount > 0) {
-    selection.removeAllRanges();
+  let text = range.toString().trim();
+  if (!text) {
+    console.warn("Empty selection detected, possibly due to hidden content.");
   }
-  selection.addRange(range);
 }
 
 function clearSelection() {
