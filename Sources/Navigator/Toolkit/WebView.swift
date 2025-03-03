@@ -61,4 +61,56 @@ final class WebView: WKWebView {
         }
     }
     
+    override func buildMenu(with builder: UIMenuBuilder) {
+        if #available(iOS 16.0, *) {
+            builder.remove(menu: .file)
+            builder.remove(menu: .edit)
+            builder.remove(menu: .view)
+            builder.remove(menu: .window)
+            builder.remove(menu: .help)
+            builder.remove(menu: .about)
+            builder.remove(menu: .preferences)
+            builder.remove(menu: .services)
+            builder.remove(menu: .hide)
+            builder.remove(menu: .quit)
+            builder.remove(menu: .newScene)
+            builder.remove(menu: .openRecent)
+            builder.remove(menu: .close)
+            builder.remove(menu: .print)
+            builder.remove(menu: .document)
+            builder.remove(menu: .undoRedo)
+            builder.remove(menu: .standardEdit)
+            builder.remove(menu: .find)
+            builder.remove(menu: .replace)
+            builder.remove(menu: .share)
+            builder.remove(menu: .textStyle)
+            builder.remove(menu: .spelling)
+            builder.remove(menu: .spellingPanel)
+            builder.remove(menu: .spellingOptions)
+            builder.remove(menu: .substitutions)
+            builder.remove(menu: .substitutionsPanel)
+            builder.remove(menu: .substitutionOptions)
+            builder.remove(menu: .transformations)
+            builder.remove(menu: .speech)
+            builder.remove(menu: .lookup)
+            builder.remove(menu: .learn)
+            builder.remove(menu: .format)
+            builder.remove(menu: .font)
+            builder.remove(menu: .textSize)
+            builder.remove(menu: .textColor)
+            builder.remove(menu: .textStylePasteboard)
+            builder.remove(menu: .text)
+            builder.remove(menu: .writingDirection)
+            builder.remove(menu: .alignment)
+            builder.remove(menu: .toolbar)
+            builder.remove(menu: .sidebar)
+            builder.remove(menu: .fullscreen)
+            builder.remove(menu: .minimizeAndZoom)
+            builder.remove(menu: .bringAllToFront)
+            if #available(iOS 17.0, *) {
+                builder.remove(menu: .autoFill)
+            }
+        }
+        super.buildMenu(with: builder)
+    }
 }
