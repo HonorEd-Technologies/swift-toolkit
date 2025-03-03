@@ -113,4 +113,8 @@ final class WebView: WKWebView {
         }
         super.buildMenu(with: builder)
     }
+    
+    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        return false // Prevents the menu from appearing
+    }
 }
