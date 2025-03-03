@@ -63,7 +63,6 @@ final class WebView: WKWebView {
     
     override func buildMenu(with builder: UIMenuBuilder) {
         if #available(iOS 16.0, *) {
-            builder.remove(menu: .application)
             builder.remove(menu: .file)
             builder.remove(menu: .edit)
             builder.remove(menu: .view)
@@ -108,7 +107,6 @@ final class WebView: WKWebView {
             builder.remove(menu: .fullscreen)
             builder.remove(menu: .minimizeAndZoom)
             builder.remove(menu: .bringAllToFront)
-            builder.remove(menu: .root)
             if #available(iOS 17.0, *) {
                 builder.remove(menu: .autoFill)
             }
