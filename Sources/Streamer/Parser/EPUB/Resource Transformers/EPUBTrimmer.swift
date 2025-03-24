@@ -47,9 +47,15 @@ public func trimContent(content: inout String, inChapter chapter: Link, nextLink
     if containsLink(arr: trimmedToc, element: chapter) {
         return
     } else {
-        if let startIndex = startIndexOfLink(in: content, link: chapter), let indexOfEnclosingBeforeTag = indexOf(content, at: startIndex, after: "<") {
+        if let startIndex = startIndexOfLink(in: content, link: chapter), let (indexOfEnclosingBeforeTag, startTag) = startTagOfLink(in: content, linkIdIndex: startIndex) {
             if let nextLink = nextLink {
-                if let endIndex = startIndexOfLink(in: content, link: nextLink), let indexOfEnclosingAfterTag = indexOf(content, at: endIndex, after: "<") {
+                if let endIndex = startIndexOfLink(in: content, link: nextLink),
+                   let indexOfEnclosingAfterTag = endIndexOfLink(
+                    in: content,
+                    tag: startTag,
+                    currentLinkIndex: startIndex,
+                    nextLinkIndex: endIndex
+                   ) {
                     content.removeSubrange(content.index(content.startIndex, offsetBy: indexOfEnclosingBeforeTag)..<content.index(content.startIndex, offsetBy: indexOfEnclosingAfterTag))
                 }
             } else {
@@ -109,6 +115,57 @@ public func indexOf(_ content: String, at index: Int, after: Character) -> Int? 
     while newIndex > 0 {
         if content[content.index(content.startIndex, offsetBy: newIndex)] == after {
             return newIndex
+        }
+        newIndex -= 1
+    }
+    return nil
+}
+
+public func startTagOfLink(
+    in content: String,
+    linkIdIndex: Int
+) -> (Int, String)? {
+    var newIndex = linkIdIndex
+    var tagInProgress = ""
+    
+    while newIndex > 0 {
+        let character = content[content.index(content.startIndex, offsetBy: newIndex)]
+        if character == "<" {
+            return (newIndex, tagInProgress)
+        } else if character.isWhitespace {
+            tagInProgress = ""
+        } else {
+            tagInProgress = [character] + tagInProgress
+        }
+        newIndex -= 1
+    }
+    return nil
+}
+
+public func endIndexOfLink(
+    in content: String,
+    tag: String,
+    currentLinkIndex: Int,
+    nextLinkIndex: Int
+) -> Int? {
+    guard nextLinkIndex > currentLinkIndex else { return nil }
+    var newIndex = nextLinkIndex
+    var tagInProgress = ""
+    var isEndTag = false
+    while newIndex > currentLinkIndex {
+        let character = content[content.index(content.startIndex, offsetBy: newIndex)]
+        let prevCharacter = content[content.index(content.startIndex, offsetBy: newIndex - 1)]
+        if character == "<" && isEndTag { /// we have reached the beginning of an end tag _before_ the start of the next tag
+            if tagInProgress == tag {
+                return newIndex
+            }
+            tagInProgress = ""
+        } else if character == "/" && prevCharacter == "<" {
+            isEndTag = true
+        } else if character.isWhitespace || character == ">" {
+            tagInProgress = ""
+        } else {
+            tagInProgress = [character] + tagInProgress
         }
         newIndex -= 1
     }
