@@ -4796,6 +4796,128 @@ function locatorFromRect(rect, hrefIds) {
     range = trimRangeBelow(range, textNodesInRange, rect, trimmingAboveResult.startTextNodeIndex);
     return rangeToLocator(range, hrefIds);
 }
+    
+function hideSections(chapter, trimmedSections) {
+    const STYLE_TAG_ID = 'honor-inclusion-styles'
+    const CONTAINS_SECTIONS_ATTRIBUTE = 'data-honor-contains-sections'
+    const SECTION_ATTRIBUTE = 'data-honor-section'
+    
+    let currentSectionId = undefined
+    
+    const getFragment = (href) => {
+        const split = href.split('#')
+        if (split.length <= 1) {
+            return undefined
+        }
+        
+        return split[split.length - 1]
+    }
+    
+    const findSection = (elementId) => {
+        return chapter.find((subChapter) => {
+            const sectionId = getFragment(subChapter.href)
+            return sectionId === elementId
+        })
+    }
+    
+    for (const { node, ancestors }) of traverseDomNodes() {
+        const section = node.id ? findSection(node.id) : undefined
+        
+        if (section && section.href) {
+            const id = getFragment(section.href)
+            currentSectionId = id.replace(' ', '_')
+        }
+        
+        const applyContainsAttribute = (ancestor) => {
+            if (currentSectionId) {
+                const ancestorSection = ancestor.getAttribute(SECTION_ATTRIBUTE)
+                const previousContains =
+                            ancestor.getAttribute(CONTAINS_SECTIONS_ATTRIBUTE) || ''
+                if (
+                   !previousContains.includes(currentSectionId) &&
+                   !(ancestorSection === currentSectionId)
+                ) {
+                   ancestor.setAttribute(
+                     CONTAINS_SECTIONS_ATTRIBUTE,
+                     (previousContains + ' ' + currentSectionId).trim()
+                   )
+                }
+            }
+        }
+        
+        if (currentSectionId) {
+            node.setAttribute(SECTION_ATTRIBUTE, currentSectionId)
+            ancestors.forEach(applyContainsAttribute)
+        }
+    }
+    
+    const includedSectionIds = []
+    const excludedSectionIds = []
+    
+    let styleContent = ''
+    
+    chapter.forEach((subChapter) => {
+        const isIncluded = trimmedSections.map((s) => s.href).has(subChapter.href)
+        const fragment = getFragment(subChapter.href)
+        
+        if (!fragment) { return }
+        if (isIncluded) {
+            includedSectionIds.push(fragment.replace(' ', '_'))
+        } else {
+            excludedSectionIds.push(fragment.replace(' ', '_'))
+        }
+    })
+    
+    const nots = includedSectionIds
+        .map((sectionId) => `:not([${CONTAINS_SECTION_ATTRIBUTE}~="${sectionId}"`)
+        .join('')
+    
+    excludedSectionIds.forEach((sectionId) => {
+        styleContent += `[${SECTION_ATTRIBUTE}="${sectionId}"]${nots} { display: none }\n\n`
+    })
+    
+    const existingStyleElement = document.getElementById(STYLE_TAG_ID)
+    
+    if (existingStyleElement) {
+        existingStyleElement.innerHTML = styleContent
+    } else {
+        const newStyleElement = document.createElement('style')
+        newStyleElement.id = STYLE_TAG_ID
+        newStyleElement.innerHTML = styleContent
+        document.head.appendChild(newStyleElement)
+    }
+}
+    
+function* traverseDomNodes() {
+  const treeWalker = document.treeWalker(document.body, 1)
+
+  const previousNode = treeWalker.currentNode
+  const ancestorStack = []
+
+  const advance = () => {
+    if (treeWalker.firstChild()) {
+      ancestorStack.push(previousNode)
+      return true
+    } else if (treeWalker.nextSibling()) {
+      return true
+    } else {
+      while (treeWalker.parentNode()) {
+        ancestorStack.pop()
+        if (treeWalker.nextSibling()) {
+          return true
+        }
+      }
+      return false
+    }
+  }
+
+  while (advance()) {
+    yield {
+      node: treeWalker.currentNode,
+      ancestors: [...ancestorStack],
+    }
+  }
+}
 
 function updateSelection(locator) {
   const range = _utils__WEBPACK_IMPORTED_MODULE_1__.rangeFromLocator(locator);
