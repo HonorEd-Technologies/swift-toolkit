@@ -22,14 +22,7 @@ final class EPUBTrimmer {
         guard resource.link.mediaType.isHTML else {
             return resource
         }
-        return resource.mapAsString { content in
-            var content = content
-            
-                // RTL dir attributes injection
-            let indexInChapter = self.toc.filter({ $0.href.contains(resource.link.href) && $0.href != resource.link.href })
-            trimContent(content: &content, toc: indexInChapter, trimmedToc: self.trimmedToc)
-            return content
-        }
+        return resource
     }
 }
 

@@ -4819,8 +4819,8 @@ function hideSections(chapter, trimmedSections) {
             return sectionId === elementId
         })
     }
-    
-    for (const { node, ancestors }) of traverseDomNodes() {
+        
+    for (const { node, ancestors } of traverseDomNodes()) {
         const section = node.id ? findSection(node.id) : undefined
         
         if (section && section.href) {
@@ -4844,7 +4844,6 @@ function hideSections(chapter, trimmedSections) {
                 }
             }
         }
-        
         if (currentSectionId) {
             node.setAttribute(SECTION_ATTRIBUTE, currentSectionId)
             ancestors.forEach(applyContainsAttribute)
@@ -4857,7 +4856,7 @@ function hideSections(chapter, trimmedSections) {
     let styleContent = ''
     
     chapter.forEach((subChapter) => {
-        const isIncluded = trimmedSections.map((s) => s.href).has(subChapter.href)
+        const isIncluded = trimmedSections.map((s) => s.href).includes(subChapter.href)
         const fragment = getFragment(subChapter.href)
         
         if (!fragment) { return }
@@ -4869,11 +4868,11 @@ function hideSections(chapter, trimmedSections) {
     })
     
     const nots = includedSectionIds
-        .map((sectionId) => `:not([${CONTAINS_SECTION_ATTRIBUTE}~="${sectionId}"`)
+        .map((sectionId) => `:not([${CONTAINS_SECTIONS_ATTRIBUTE}~="${sectionId}"])`)
         .join('')
     
     excludedSectionIds.forEach((sectionId) => {
-        styleContent += `[${SECTION_ATTRIBUTE}="${sectionId}"]${nots} { display: none }\n\n`
+        styleContent += `[${SECTION_ATTRIBUTE}="${sectionId}"]${nots} { display: none; }\n\n`
     })
     
     const existingStyleElement = document.getElementById(STYLE_TAG_ID)
@@ -4889,12 +4888,12 @@ function hideSections(chapter, trimmedSections) {
 }
     
 function* traverseDomNodes() {
-  const treeWalker = document.treeWalker(document.body, 1)
-
-  const previousNode = treeWalker.currentNode
+  const treeWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT)
   const ancestorStack = []
 
   const advance = () => {
+    const { currentNode: previousNode } = treeWalker
+      
     if (treeWalker.firstChild()) {
       ancestorStack.push(previousNode)
       return true
@@ -5158,6 +5157,7 @@ window.readium = {
   updateEndOfSpread: updateEndOfSpread,
   locatorFromRect: locatorFromRect,
   updateSelection: updateSelection,
+  hideSections: hideSections,
   clearSelection: clearSelection,
   scrollToSelectionIfNeeded: scrollToSelectionIfNeeded,
   addAccessibilityEnergyBar: addAccessibilityEnergyBar,

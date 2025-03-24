@@ -208,6 +208,12 @@ public struct Link: JSONEquatable, Hashable {
 
 }
 
+extension Link {
+    public func flatChildren() -> [Link] {
+        return self.children.flatMap { [$0] + $0.flatChildren() }
+    }
+}
+
 
 extension Array where Element == Link {
     
@@ -298,6 +304,30 @@ extension Array where Element == Link {
                 mediaType.matches(link.mediaType)
             }
         }
+    }
+    
+    public func find(_ predicate: @escaping (Element) -> Bool) -> Element? {
+        // base case, self is empty
+        if self.isEmpty {
+            return nil
+        }
+        // loop through first level links
+        for link in self {
+            if predicate(link) {
+                return link
+            }
+        }
+        
+        // move on to children
+        return self.flatMap(\.children).find(predicate)
+    }
+    
+    public func flatList() -> Self {
+        return self.flatMap(self.flatList)
+    }
+    
+    private func flatList(_ link: Element) -> Self {
+        return [link] + link.children.flatMap(self.flatList)
     }
     
     @available(*, unavailable, message: "This API will be removed.")
