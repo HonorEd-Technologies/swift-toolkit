@@ -826,6 +826,38 @@ extension EPUBNavigatorViewController: EPUBSpreadViewDelegate {
         return self.onSpreadViewShouldDefaultToWebview?() ?? false
     }
     
+    private func trimSpreadView(_ spreadView: EPUBSpreadView) {
+        guard let trimmedToc = config.trimmedToc else { return }
+        let link = spreadView.spread.leading
+        
+        guard let chapterRef = publication.tableOfContents.find({ $0.href == link.href }) else { return }
+        
+        // With the given chapter associated with the spread identified, recursively get a flat list of all children (subchapters, sub-subchapters, etc.)
+        let filteredChapters = chapterRef.flatChildren()
+        
+        // the trimmedToc parameter comes from the server, and doesn't have the notion of children. We want to get the "filled-in" version directly from the ToC, repeat the behavior vis-a-vis the children
+        let trimmedSubchapters = trimmedToc
+            .filter { $0.href.starts(with: link.href) }
+            .compactMap({ subChapter in
+                return filteredChapters.find { $0.href == subChapter.href }
+            })
+            .flatList()
+        
+        guard let serializedChapters = serializeJSONString(filteredChapters.map({ ["href": $0.href] })),
+              let serializedTrimmedChapters = serializeJSONString(trimmedSubchapters.map({ ["href": $0.href] })) else { return }
+        let script = """
+        function run() {
+            window.readium.hideSections(
+                \(serializedChapters),
+                \(serializedTrimmedChapters)
+            )
+        }
+        run()
+        """
+        
+        spreadView.evaluateScript(script)
+    }
+    
     func spreadViewDidLoad(_ spreadView: EPUBSpreadView) {
         let templates = config.decorationTemplates.reduce(into: [:]) { styles, item in
             styles[item.key.rawValue] = item.value.json
@@ -883,6 +915,7 @@ extension EPUBNavigatorViewController: EPUBSpreadViewDelegate {
         """
         
         spreadView.evaluateScript(videoControlScript)
+        trimSpreadView(spreadView)
         onSpreadDidLoad?(spreadView)
     }
     
@@ -964,7 +997,6 @@ extension EPUBNavigatorViewController: EPUBSpreadViewDelegate {
                 return
             }
         }
-        let trimmedHref = href.prefix { $0 != "#" }
         if let id = href.components(separatedBy: "#").last {
             spreadView.evaluateScript("window.readium.doesElementExist(\"\(id)\")") { [weak self] val in
                 if case let .success(doesExist) = val, doesExist as? Bool == true {
