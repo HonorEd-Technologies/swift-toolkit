@@ -71,14 +71,8 @@ final public class EPUBParser: PublicationParser {
         let links = components.readingOrder + components.resources
         let userProperties = UserProperties()
         
-        var transformers: [ResourceTransformer] = [EPUBDeobfuscator(publicationId: metadata.identifier ?? "").deobfuscate(resource:),
+        let transformers: [ResourceTransformer] = [EPUBDeobfuscator(publicationId: metadata.identifier ?? "").deobfuscate(resource:),
             EPUBHTMLInjector(metadata: components.metadata, userProperties: userProperties).inject]
-        
-        if let tocLinks = navigationDocument(in: fetcher, links: links)?.links(for: .tableOfContents), let trimmedToc = trimmedToc {
-            transformers.append(EPUBTrimmer(trimmedToc: trimmedToc, toc: tocLinks.flatMap(\.children).flatMap({ [$0] + $0.children })).trim)
-        } else if let tocLinks = ncxDocumentToC(in: fetcher, links: links), let trimmedToc = trimmedToc {
-            transformers.append(EPUBTrimmer(trimmedToc: trimmedToc, toc: tocLinks.flatMap(\.children).flatMap({ [$0] + $0.children })).trim)
-        }
 
         return Publication.Builder(
             mediaType: .epub,
