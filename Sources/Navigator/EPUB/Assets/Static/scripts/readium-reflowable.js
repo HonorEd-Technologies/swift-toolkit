@@ -4804,6 +4804,7 @@ function hideSections(chapter, trimmedSections) {
     
     let currentSectionId = undefined
     
+    // returns the id of an element referenced by a link (e.g. some-file.html#element-id -> element-id)
     const getFragment = (href) => {
         const split = href.split('#')
         if (split.length <= 1) {
@@ -4813,6 +4814,7 @@ function hideSections(chapter, trimmedSections) {
         return split[split.length - 1]
     }
     
+    // given the id of an element, find the section it corresponds to
     const findSection = (elementId) => {
         return chapter.find((subChapter) => {
             const sectionId = getFragment(subChapter.href)
@@ -4820,14 +4822,18 @@ function hideSections(chapter, trimmedSections) {
         })
     }
         
+    // loop through every node in the document (and its ancestors -- a list of direct ascendants up to the root
     for (const { node, ancestors } of traverseDomNodes()) {
+        // if the node has an id, try to use it to find the section
         const section = node.id ? findSection(node.id) : undefined
         
+        // if the section exists, save the id of the element
         if (section && section.href) {
             const id = getFragment(section.href)
             currentSectionId = id.replace(' ', '_')
         }
         
+        // create a function to run on the node's ancestors, applying the CONTAINS_SECTIONS_ATTRIBUTE to the passed in element
         const applyContainsAttribute = (ancestor) => {
             if (currentSectionId) {
                 const ancestorSection = ancestor.getAttribute(SECTION_ATTRIBUTE)
@@ -4845,6 +4851,7 @@ function hideSections(chapter, trimmedSections) {
             }
         }
         if (currentSectionId) {
+            // set the SECTION_ATTRIBUTE of the current node, run the function described above on the ancestors
             node.setAttribute(SECTION_ATTRIBUTE, currentSectionId)
             ancestors.forEach(applyContainsAttribute)
         }
@@ -4855,6 +4862,7 @@ function hideSections(chapter, trimmedSections) {
     
     let styleContent = ''
     
+    // keep track of which chapters are included / excluded given the passed in TOC and trimmed TOC
     chapter.forEach((subChapter) => {
         const isIncluded = trimmedSections.map((s) => s.href).includes(subChapter.href)
         const fragment = getFragment(subChapter.href)
@@ -4867,10 +4875,12 @@ function hideSections(chapter, trimmedSections) {
         }
     })
     
+    // generate the CSS selector for identifying elements that are in a "excluded" section but also in a less parent-y "included" section
     const nots = includedSectionIds
         .map((sectionId) => `:not([${CONTAINS_SECTIONS_ATTRIBUTE}~="${sectionId}"])`)
         .join('')
     
+    // for each excluded section, set display to none while exempting nodes satisfying the case above
     excludedSectionIds.forEach((sectionId) => {
         styleContent += `[${SECTION_ATTRIBUTE}="${sectionId}"]${nots} { display: none; }\n\n`
     })

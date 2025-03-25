@@ -831,8 +831,11 @@ extension EPUBNavigatorViewController: EPUBSpreadViewDelegate {
         let link = spreadView.spread.leading
         
         guard let chapterRef = publication.tableOfContents.find({ $0.href == link.href }) else { return }
+        
+        // With the given chapter associated with the spread identified, recursively get a flat list of all children (subchapters, sub-subchapters, etc.)
         let filteredChapters = chapterRef.flatChildren()
         
+        // the trimmedToc parameter comes from the server, and doesn't have the notion of children. We want to get the "filled-in" version directly from the ToC, repeat the behavior vis-a-vis the children
         let trimmedSubchapters = trimmedToc
             .filter { $0.href.starts(with: link.href) }
             .compactMap({ subChapter in
