@@ -4042,6 +4042,12 @@ window.addEventListener(
   },
   false
 );
+    
+window.addEventListener('resize', function() {
+    groups.forEach(function (group) {
+      group.requestLayout();
+    });
+})
 
 
 /***/ }),
